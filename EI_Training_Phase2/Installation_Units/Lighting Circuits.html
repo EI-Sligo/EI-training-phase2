@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 4: Lighting & Circuits</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #2d3748;
+            --steel-blue: #4a5568;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: white;
+            overflow: hidden;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .slide {
+            display: none;
+            height: 100vh;
+            padding: 2rem 4rem;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            overflow-y: auto;
+        }
+
+        @media (max-height: 800px) {
+            .slide {
+                justify-content: flex-start;
+                padding-top: 4rem;
+            }
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-save {
+            background-color: #4a5568;
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+            border: 1px solid #718096;
+            font-size: 0.9rem;
+        }
+
+        .btn-save:hover {
+            background-color: #2d3748;
+            border-color: var(--safety-yellow);
+        }
+
+        .card {
+            background-color: #2d3748;
+            border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--safety-yellow);
+            width: 0%;
+            transition: width 0.3s;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        .img-box {
+            height: 350px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 2px solid #4a5568;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .img-box.small {
+            height: 150px; /* Smaller height for stacked images */
+        }
+
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+        }
+
+        .quiz-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #4a5568;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+        }
+        .quiz-btn:hover {
+            background-color: #718096;
+        }
+        .correct { background-color: #48bb78 !important; }
+        .incorrect { background-color: #f56565 !important; }
+
+        /* External Link Button Style */
+        .btn-external {
+            display: inline-block;
+            background-color: #cc181e; /* YouTube Red */
+            color: white;
+            font-weight: bold;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+        .btn-external:hover {
+            background-color: #e62117;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button onclick="saveAndExit()" class="btn-save">
+            <i class="fas fa-save mr-2"></i> Save & Exit
+        </button>
+    </div>
+
+    <div class="fixed bottom-8 right-8 z-50 flex gap-4">
+        <button onclick="prevSlide()" class="btn-nav"><i class="fas fa-chevron-left"></i> PREV</button>
+        <button onclick="nextSlide()" class="btn-nav">NEXT <i class="fas fa-chevron-right"></i></button>
+    </div>
+    
+    <div class="fixed bottom-8 left-8 z-50 text-gray-400 brand-font text-xl">
+        <span id="page-indicator">1</span> / <span id="total-pages">30</span>
+    </div>
+
+    <div class="progress-bar" id="progress"></div>
+
+    <div class="slide active" id="slide-1">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="text-yellow-400 text-xl mb-4 tracking-widest brand-font">Phase 2 Electrical Instrumentation</div>
+            <h1 class="text-6xl font-bold mb-6">Unit 4: Lighting & Lighting Circuits</h1>
+            <div class="w-24 h-2 bg-yellow-400 mx-auto mb-8"></div>
+            <p class="text-xl text-gray-300">Principles, Installation, Regulations & Safety</p>
+
+            <div id="resume-prompt" class="hidden mt-8 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left">
+                <p class="text-lg mb-4"><i class="fas fa-history text-green-400 mr-2"></i> You have a saved session.</p>
+                <div class="flex gap-4">
+                    <button onclick="resumeSession()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded font-bold transition">
+                        Resume from Slide <span id="saved-slide-num"></span>
+                    </button>
+                    <button onclick="clearSession()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">
+                        Start Over
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-2">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Module Structure</h2>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-2 text-blue-400">1. Light Sources</h3>
+                    <p class="text-gray-300 text-sm">Incandescent principles, Caps, Discharge lighting effects.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-2 text-green-400">2. Switching</h3>
+                    <p class="text-gray-300 text-sm">One-way, Two-way, Intermediate, Master Control, Symbols.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-2 text-yellow-400">3. Regulations (ETCI)</h3>
+                    <p class="text-gray-300 text-sm">Heights, Circuits, Protection, Supply Sequence.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-2 text-red-400">4. Safety & Testing</h3>
+                    <p class="text-gray-300 text-sm">Polarity, Smoke Alarms, Fire Barriers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-3">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Incandescent Lamps</h2>
+                <div class="bg-gray-800 p-6 rounded border border-gray-600">
+                    <h3 class="text-xl font-bold mb-4">Principle of Operation</h3>
+                    <p class="text-gray-300 mb-4">Current flows through a fine tungsten filament. The filament is heated to a very high temperature in an inert gas, causing it to glow.</p>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                        <li><strong>Effect:</strong> Uses the <strong>Heating Effect</strong> of electric current.</li>
+                        <li><strong>Lifespan:</strong> Approximately <strong>1000 Hours</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Gluehlampe_01_KMJ.png" alt="Light Bulb">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-4">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Lamp Caps</h2>
+                <div class="card mb-4">
+                    <h3 class="text-2xl font-bold mb-2">BC (Bayonet Cap)</h3>
+                    <p class="text-gray-300">Standard push and twist fitting. Commonly used in pendants.</p>
+                </div>
+                <div class="card border-l-4 border-red-500">
+                    <h3 class="text-2xl font-bold mb-2">ES (Edison Screw)</h3>
+                    <p class="text-gray-300 mb-4">Screw-in fitting. Requires strict polarity.</p>
+                    <div class="bg-red-900/30 p-3 rounded">
+                        <strong>Safety Rule:</strong> The outer screw thread must be connected to the <strong>Neutral</strong>. The centre contact is the Phase.
+                    </div>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="https://www.lampspares.co.uk/product_images/uploaded_images/lamp-cap-types.jpg" alt="Light Bulb Caps">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-5">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Discharge Lighting Issues</h2>
+                <div class="bg-gray-800 p-8 rounded border border-blue-500">
+                    <h3 class="text-2xl font-bold mb-4 text-blue-400">Stroboscopic Effect</h3>
+                    <p class="text-lg text-gray-300 mb-4">Under discharge lighting (like older fluorescents), rotating machinery may appear stationary or moving slowly if the rotation speed matches the mains frequency (50Hz).</p>
+                    <p class="font-bold text-red-400">Danger: Moving parts may appear safe to touch.</p>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="https://www.electrical4u.com/wp-content/uploads/Stroboscopic-Motion-Helicopter.gif " alt="Industrial Fan/Machinery">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-6">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Fluorescent Components</h2>
+                <div class="card mb-4">
+                    <h3 class="font-bold text-lg">The Starter</h3>
+                    <p class="text-sm text-gray-300">Initiates the arc.</p>
+                </div>
+                <div class="card border border-yellow-500">
+                    <h3 class="font-bold text-lg text-yellow-400">The Capacitor</h3>
+                    <p class="text-sm text-gray-300">A small capacitor is connected across the starter switch.</p>
+                    <p class="text-sm font-bold mt-2 text-white">Purpose: Radio Interference Suppression.</p>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="https://media.hswstatic.com/eyJidWNrZXQiOiJjb250ZW50Lmhzd3N0YXRpYy5jb20iLCJrZXkiOiJnaWZcL2ZsdW9yZXNjZW50LWxhbXAtc3RhcnRlci5naWYiLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjI5MH0sInRvRm9ybWF0IjoiYXZpZiJ9fQ==" alt="Fluorescent Tubes">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-7">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 1</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold mb-2">1. Lifespan of a tungsten lamp?</p>
+                    <button onclick="check(this, true)" class="quiz-btn">1000 Hours</button>
+                    <button onclick="check(this, false)" class="quiz-btn">3000 Hours</button>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold mb-2">2. ES Lamp Thread connects to?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Phase</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Neutral</button>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold mb-2">3. Stroboscopic effect makes machines...?</p>
+                    <button onclick="check(this, true)" class="quiz-btn">Appear stationary</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Spin faster</button>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold mb-2">4. Capacitor across starter provides?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Power Factor Correction</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Radio Interference Suppression</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-8">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Switching Basics</h2>
+                <ul class="space-y-4 text-gray-300 mb-6">
+                    <li><strong>1-Way Switch:</strong> Controls light from 1 position. (2 Terminals: C, L1).</li>
+                    <li><strong>2-Way Switch:</strong> Controls light from 2 positions (e.g. Stairs). (3 Terminals: C, L1, L2).</li>
+                </ul>
+                <div class="bg-gray-800 p-6 rounded border border-green-500">
+                    <h3 class="text-xl font-bold mb-2">The Strappers</h3>
+                    <p class="text-gray-300 mb-4">In two-way switching, two wires connect the switches together.</p>
+                    <div class="bg-green-900/30 p-3 rounded">
+                        <strong>Fact:</strong> Strappers are connected <strong>between the two-way switches</strong> (e.g. L1 to L1, L2 to L2).
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col gap-4">
+                <div class="img-box small bg-white">
+                    <img src="https://flameport.com/electric/lighting_circuits/switchwires_1way_newcolour_T.png" alt="One Way Switching Diagram">
+                </div>
+                <div class="img-box small bg-white">
+                    <img src="https://flameport.com/electric/lighting_circuits/switchwires_2way_both_newcolour_alt_T.png" alt="Two Way Switching Diagram">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-9">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Video: 2-Way Switching</h2>
+                <p class="text-gray-300 mb-4">This external video demonstrates how the current flows through the "Strappers" (L1 and L2) to control the light from two different locations.</p>
+                <div class="bg-blue-900/30 p-4 rounded border border-blue-500">
+                    <strong>Key Concept:</strong> The switch wire is only live when a complete path exists through the strappers.
+                </div>
+            </div>
+            <div class="flex flex-col justify-center">
+                <a href="https://www.youtube.com/watch?v=opoEswRp_jg" target="_blank" class="btn-external">
+                    <i class="fab fa-youtube text-3xl mb-2 block"></i>
+                    Watch Explanation Video<br>
+                    <span class="text-xs font-normal">(Opens in new tab)</span>
+                </a>
+                <p class="text-center text-xs mt-4 text-gray-500">Video Source: John Ward (YouTube)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-10">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Intermediate Switching</h2>
+                <p class="text-xl text-gray-300 mb-6">Used when control is required from <strong>3 or more</strong> positions.</p>
+                
+                <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                    <h3 class="text-2xl font-bold mb-4">The Rule of N</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li>Start with 2x Two-Way Switches (Ends).</li>
+                        <li>Add Intermediate Switches in the middle for extra points.</li>
+                    </ul>
+                    <div class="mt-6 p-4 bg-blue-900/30 rounded border border-blue-500">
+                        <strong>Example (5 Positions):</strong><br>
+                        2 x Two-Way Switches<br>
+                        3 x Intermediate Switches
+                    </div>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="https://flameport.com/electric/lighting_circuits/switchwires_3way_both_newcolour_T.png " alt="Intermediate Switching Diagram">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-11">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Master Control Switch</h2>
+                <div class="bg-gray-800 p-8 rounded border border-red-500">
+                    <h3 class="text-2xl font-bold mb-4">Master ON</h3>
+                    <p class="text-gray-300 mb-4">A switch connected in parallel with local switches.</p>
+                    <p class="text-gray-300 mb-4">When closed, it creates a direct path from Live to the Lamps, bypassing local switches.</p>
+                    <p class="font-bold text-yellow-400">Function: Over-rides local switches to turn ALL lights ON.</p>
+                    <p class="text-xs text-gray-500 mt-2">(Often used for security/panic lighting).</p>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="https://i.ytimg.com/vi/wSzeyP_mYN8/maxresdefault.jpg " alt="Master Control Diagram">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-12">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Graphical Symbols</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-6">
+                <div class="card flex items-center gap-4 h-32">
+                    
+                    <div>
+                        <p class="font-bold text-xl">Light Point</p>
+                        <p class="text-sm text-gray-400">General lighting outlet</p>
+                    </div>
+                </div>
+                <div class="img-box h-32 bg-white">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdNMdlp3RRgQ_wACEwpwIoYk7NjcBrQMcYoITq7dCgKOJpxUxIyGhY_iwJ0LL8icC90CA&usqp=CAU " alt="Light Point Symbol Image">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-6">
+                <div class="card flex items-center gap-4 h-32">
+                    
+                    <div>
+                        <p class="font-bold text-xl">One Way Switch</p>
+                        <p class="text-sm text-gray-400">Single pole switch</p>
+                    </div>
+                </div>
+                <div class="img-box h-32 bg-white">
+                    <img src=" https://www.clipartmax.com/png/full/90-905656_one-way-switch-symbol.png " alt="One Way Switch Symbol Image">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="card flex items-center gap-4 h-32">
+                    
+                    <div>
+                        <p class="font-bold text-xl">Two Way Switch</p>
+                        <p class="text-sm text-gray-400">Two-way control</p>
+                    </div>
+                </div>
+                <div class="img-box h-32 bg-white">
+                    <img src="https://gallery.proficad.com/Preview/512.s.png " alt="Two Way Switch Symbol Image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-13">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 2</h2>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">1. Switches for 5 positions?</p>
+                <button onclick="check(this, false)" class="quiz-btn">5 intermediate</button>
+                <button onclick="check(this, true)" class="quiz-btn">2 two-ways, 3 intermediate</button>
+                <button onclick="check(this, false)" class="quiz-btn">5 one-ways</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">2. Where are Strappers connected?</p>
+                <button onclick="check(this, true)" class="quiz-btn">Between the two way switches</button>
+                <button onclick="check(this, false)" class="quiz-btn">Between Live and Neutral</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">3. What does a Master ON switch do?</p>
+                <button onclick="check(this, false)" class="quiz-btn">Turns everything off</button>
+                <button onclick="check(this, true)" class="quiz-btn">Over-rides switches to turn lights on</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-14">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Loop-In Method</h2>
+                <p class="text-gray-300 mb-4">The most common domestic wiring method.</p>
+                <div class="bg-blue-900/30 p-4 rounded border border-blue-500">
+                    <strong>Key Point:</strong> The Live (Phase) conductor is looped at the <strong>Ceiling Rose</strong>.
+                </div>
+                <p class="text-sm text-gray-400 mt-4">A switch drop cable takes the live to the switch and returns with a "Switched Live".</p>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://flameport.com/electric/lighting_circuits/ceiling_rose_newcolours_T.png" alt="Loop In at Ceiling Rose">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-15">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Junction Box Method</h2>
+                <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                    <p class="text-xl mb-4">Alternative to Loop-in.</p>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-3">
+                        <li>Connections are made in a central junction box (usually in the attic/void).</li>
+                        <li>Only the flex goes to the light fitting.</li>
+                        <li><strong>Requirement:</strong> Junction boxes must remain <strong>accessible</strong> for inspection.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="https://flameport.com/electric/lighting_circuits/junction_box_4-lighting_newcolours_T.png" alt="Electrical Junction Work">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-16">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Flexible Cord Sizes</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-2">Application</h3>
+                    <p class="text-gray-300">Used from the Ceiling Rose to the Lampholder (Pendant).</p>
+                </div>
+                <div class="card border-l-4 border-red-500">
+                    <h3 class="text-xl font-bold mb-2 text-red-400">Minimum Size</h3>
+                    <p class="text-gray-300 mb-2">According to ETCI rules:</p>
+                    <p class="text-3xl font-bold">0.75 mm²</p>
+                    <p class="text-xs text-gray-500 mt-2">(Note: 0.5mm was used historically, but 0.75mm is the robust standard).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-17">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Counting Conductors</h2>
+                <p class="text-gray-300 mb-4"><strong>Scenario:</strong> Two fluorescent fittings in PVC conduit controlled by one switch. How many wires at the link (Point X)?</p>
+                <div class="card bg-blue-900/30 border-blue-500">
+                    <h4 class="font-bold mb-2">The Breakdown:</h4>
+                    <ol class="list-decimal pl-5 text-sm space-y-1">
+                        <li><strong>Phase (Live):</strong> Feed looping to next point.</li>
+                        <li><strong>Neutral:</strong> Return path.</li>
+                        <li><strong>Earth:</strong> Protection.</li>
+                        <li><strong>Switched Phase:</strong> From switch to lamp.</li>
+                    </ol>
+                    <p class="mt-2 font-bold text-xl text-white">Total = 4 Conductors</p>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded text-center">
+                <i class="fas fa-calculator text-6xl text-gray-500 mb-4"></i>
+                <p class="text-sm font-bold">Counting Conductors is vital for Conduit Capacity (Space Factor).</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-18">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 3</h2>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">1. Where is the live looped in the Ceiling Rose method?</p>
+                <button onclick="check(this, false)" class="quiz-btn">Switches</button>
+                <button onclick="check(this, true)" class="quiz-btn">Ceiling Roses</button>
+                <button onclick="check(this, false)" class="quiz-btn">Junction Boxes</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">2. Minimum flex size for pendant?</p>
+                <button onclick="check(this, false)" class="quiz-btn">0.25mm</button>
+                <button onclick="check(this, false)" class="quiz-btn">0.5mm</button>
+                <button onclick="check(this, true)" class="quiz-btn">0.75mm</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">3. Conductors in conduit for 2 fittings (Loop-in)?</p>
+                <button onclick="check(this, false)" class="quiz-btn">3</button>
+                <button onclick="check(this, true)" class="quiz-btn">4</button>
+                <button onclick="check(this, false)" class="quiz-btn">5</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-19">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Switch Mounting Heights</h2>
+            <div class="bg-gray-800 p-8 rounded border border-green-500 inline-block">
+                <i class="fas fa-ruler-vertical text-6xl text-green-400 mb-4"></i>
+                <h3 class="text-2xl font-bold mb-4">Accessible Zone</h3>
+                <p class="text-gray-300 mb-2">Switches should be mounted between:</p>
+                <p class="text-4xl font-bold text-white">900mm - 1200mm</p>
+                <p class="text-sm text-gray-400 mt-2">From finished floor level.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-20">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-2 gap-8">
+            <div class="card">
+                <h3 class="text-xl font-bold mb-2">Circuit Quantities</h3>
+                <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                    <li><strong>Min Circuits:</strong> A domestic installation must have at least <strong>2</strong> lighting circuits.</li>
+                    <li><strong>Max Points:</strong> Maximum <strong>10</strong> points (lights) per circuit.</li>
+                </ul>
+            </div>
+            <div class="card border-blue-500 border">
+                <h3 class="text-xl font-bold mb-2">Wattage Cap</h3>
+                <p class="text-gray-300 mb-4">Total load should not exceed 1200W per circuit (approx).</p>
+                <p class="text-sm text-gray-400">This aligns with the 10 point rule (assuming 100W per point).</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-21">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-2 gap-8">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Protection (MCB)</h2>
+                <div class="bg-gray-800 p-6 rounded">
+                    <h3 class="font-bold text-lg mb-2">Sizing the MCB</h3>
+                    <p class="text-gray-300 mb-4">For a standard lighting circuit wired in <strong>1.5mm² copper</strong>:</p>
+                    <p class="text-2xl font-bold text-green-400">10 Amps</p>
+                    <p class="text-xs text-gray-400 mt-2">(6A is also common, but 10A is standard for 1.5mm).</p>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Fuse Rating Principle</h2>
+                <div class="bg-gray-800 p-6 rounded">
+                    <p class="text-gray-300 mb-4">The current rating of a fuse/MCB is determined by:</p>
+                    <div class="bg-red-900/30 p-3 border-l-4 border-red-500">
+                        <strong>The capacity of the smallest conductor in the circuit.</strong>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-2">Protection protects the CABLE, not the appliance.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-22">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Supply Equipment Sequence</h2>
+            <div class="flex justify-center items-center gap-4 text-sm md:text-base">
+                <div class="bg-gray-700 p-4 rounded">1. Service Fuse</div>
+                <i class="fas fa-arrow-right text-yellow-400"></i>
+                <div class="bg-gray-700 p-4 rounded">2. Meter</div>
+                <i class="fas fa-arrow-right text-yellow-400"></i>
+                <div class="bg-gray-700 p-4 rounded">3. Main Switch</div>
+                <i class="fas fa-arrow-right text-yellow-400"></i>
+                <div class="bg-gray-700 p-4 rounded">4. Protective Device</div>
+            </div>
+            <div class="mt-8 p-4 bg-gray-800 rounded border border-gray-600 inline-block">
+                <strong>Correct Order:</strong> 4, 1, 3, 2 (Based on Quiz Option Logic) -> Fuse, Meter, Switch, Protection.
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-23">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 4</h2>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">1. Switch mounting height?</p>
+                <button onclick="check(this, false)" class="quiz-btn">1200-1500mm</button>
+                <button onclick="check(this, true)" class="quiz-btn">900-1200mm</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">2. Max points per circuit?</p>
+                <button onclick="check(this, true)" class="quiz-btn">10</button>
+                <button onclick="check(this, false)" class="quiz-btn">15</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">3. Recommended MCB for 1.5mm lighting?</p>
+                <button onclick="check(this, false)" class="quiz-btn">20A</button>
+                <button onclick="check(this, true)" class="quiz-btn">10A</button>
+                <button onclick="check(this, false)" class="quiz-btn">6A</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">4. Fuse rating is determined by?</p>
+                <button onclick="check(this, false)" class="quiz-btn">Lamp wattage</button>
+                <button onclick="check(this, true)" class="quiz-btn">Smallest conductor capacity</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-24">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Polarity Testing</h2>
+                <div class="card mb-4">
+                    <h3 class="text-xl font-bold mb-2">What is it?</h3>
+                    <p class="text-gray-300">Verifying that the Phase (Live) conductor is connected to the correct points.</p>
+                </div>
+                <div class="card border-l-4 border-red-500">
+                    <h3 class="text-xl font-bold mb-2">Why do it?</h3>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                        <li>To ensure the <strong>Switch</strong> is on the Live wire.</li>
+                        <li>To ensure the <strong>Fuse/MCB</strong> is on the Live wire.</li>
+                        <li>To ensure ES lamp centre pin is Live.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="https://www.elprocus.com/wp-content/uploads/polarity-test-of-lighting-circuit-300x182.png " alt="Multimeter Testing">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-25">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Smoke Alarm Types</h2>
+                <div class="space-y-4">
+                    <div class="card">
+                        <h3 class="font-bold text-green-400 mb-2">Optical</h3>
+                        <p class="text-sm text-gray-300">Detects smouldering fires (Landing/Hall).</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-blue-400 mb-2">Ionisation</h3>
+                        <p class="text-sm text-gray-300">Detects fast flaming fires (Bedroom).</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-red-400 mb-2">Heat</h3>
+                        <p class="text-sm text-gray-300">Reacts to temp (Kitchen).</p>
+                    </div>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="https://www.safelincs.co.uk/templates_safelincs/images/jShopUploads/kidde-2-smoke-and-1-heat-alarm-bundle-group.jpg " alt="Smoke Alarm">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-26">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 5</h2>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">1. Why perform Polarity test?</p>
+                <button onclick="check(this, false)" class="quiz-btn">Check resistance</button>
+                <button onclick="check(this, true)" class="quiz-btn">Ensure switch feed connected to Fuse/MCB</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">2. Alarm for Landing?</p>
+                <button onclick="check(this, true)" class="quiz-btn">Optical</button>
+                <button onclick="check(this, false)" class="quiz-btn">Heat</button>
+            </div>
+            <div class="bg-gray-800 p-6 rounded mb-4">
+                <p class="font-bold mb-3">3. Alarm for Kitchen?</p>
+                <button onclick="check(this, false)" class="quiz-btn">Ionisation</button>
+                <button onclick="check(this, true)" class="quiz-btn">Heat</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-27">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Incandescent Summary</h2>
+            <div class="grid grid-cols-3 gap-6 text-left">
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold text-gray-400">Effect</p>
+                    <p class="text-xl">Heating</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold text-gray-400">Lifespan</p>
+                    <p class="text-xl">1000 Hours</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold text-gray-400">Mechanism</p>
+                    <p class="text-xl">Heated Filament</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-28">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Lamp Caps Review</h2>
+            <div class="grid grid-cols-2 gap-6 text-left">
+                <div class="card">
+                    <h3 class="text-2xl font-bold">BC</h3>
+                    <p class="text-gray-300">Bayonet Cap</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-2xl font-bold">ES</h3>
+                    <p class="text-gray-300">Edison Screw</p>
+                    <p class="text-xs text-red-400 mt-1">Thread = Neutral</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-29">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Effects of Current</h2>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="card">
+                    <h3 class="font-bold text-yellow-400">Heating</h3>
+                    <p class="text-sm">Used in Lamps, Fuses, Heaters.</p>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-blue-400">Magnetic</h3>
+                    <p class="text-sm">Used in Motors, Transformers, Bells.</p>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-green-400">Chemical</h3>
+                    <p class="text-sm">Used in Batteries, Plating.</p>
+                </div>
+            </div>
+            <div class="mt-4 p-3 bg-gray-800 border border-white rounded text-center">
+                <strong>Quiz Note:</strong> Incandescent lamps use the <strong>Heating</strong> effect.
+            </div>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-30">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl text-yellow-400 mb-8">Module Complete</h2>
+            <div class="text-left bg-gray-800 p-8 rounded border border-gray-600 text-lg">
+                <ul class="space-y-3 text-gray-300">
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Lamps:</strong> Types, caps, effects.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Circuits:</strong> 1-way, 2-way, Intermediate.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Regs:</strong> Heights, sizes, protection.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Safety:</strong> Polarity & Smoke Alarms.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="mt-8">
+            <button onclick="goToSlide(1)" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded">Restart Presentation</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 30;
+
+        // Check for saved progress
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem('unit4_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+                document.getElementById('saved-slide-num').innerText = savedSlide;
+            }
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.getElementById('progress').style.width = ((currentSlide / totalSlides) * 100) + '%';
+        }
+
+        function nextSlide() { 
+            if(currentSlide < totalSlides) { 
+                currentSlide++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevSlide() { 
+            if(currentSlide > 1) { 
+                currentSlide--; 
+                updateUI(); 
+            } 
+        }
+        
+        function goToSlide(n) { 
+            currentSlide = n; 
+            updateUI(); 
+        }
+
+        function saveAndExit() {
+            localStorage.setItem('unit4_slide', currentSlide);
+            if(currentSlide === totalSlides) {
+                localStorage.setItem('unit4', 'completed');
+            }
+            window.location.href = 'Installation_Techniques_Hub.html';
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem('unit4_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem('unit4_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => {
+                b.classList.remove('correct', 'incorrect');
+                b.style.opacity = '0.5';
+            });
+            btn.style.opacity = '1';
+            if(isCorrect) {
+                btn.classList.add('correct');
+                btn.innerHTML += ' <i class="fas fa-check float-right"></i>';
+            } else {
+                btn.classList.add('incorrect');
+                btn.innerHTML += ' <i class="fas fa-times float-right"></i>';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>

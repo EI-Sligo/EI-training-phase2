@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Installation - Phase 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- SortableJS for Drag and Drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --card-bg: #2d3748;
+            --success-green: #48bb78;
+            --progress-blue: #4299e1;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--industrial-grey);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(
+                45deg,
+                #000,
+                #000 10px,
+                #FFD700 10px,
+                #FFD700 20px
+            );
+            height: 10px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        /* Module Card Styles */
+        .module-card {
+            background-color: var(--card-bg);
+            border: 1px solid #4a5568;
+            border-radius: 0.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: grab; /* Indicates draggable */
+        }
+
+        .module-card:active {
+            cursor: grabbing;
+        }
+
+        /* Dragging visual cue */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #4a5568;
+            border: 2px dashed var(--safety-yellow);
+        }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            border-color: var(--safety-yellow);
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: var(--safety-yellow);
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .module-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Completed State Styles */
+        .module-card.completed {
+            border-color: var(--success-green);
+        }
+        .module-card.completed::before {
+            background-color: var(--success-green);
+            opacity: 1;
+        }
+
+        /* In Progress State Styles */
+        .module-card.in-progress {
+            border-color: var(--progress-blue);
+        }
+        .module-card.in-progress::before {
+            background-color: var(--progress-blue);
+            opacity: 1;
+        }
+
+        /* Button Styles */
+        .btn-launch {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+            font-family: 'Oswald', sans-serif;
+            display: inline-block;
+            transition: background-color 0.2s;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .btn-launch:hover {
+            background-color: #e6c200;
+        }
+
+        .btn-launch.completed-btn {
+            background-color: var(--success-green);
+            color: white;
+        }
+        .btn-launch.completed-btn:hover {
+            background-color: #38a169;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: none;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: var(--success-green);
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: auto;
+        }
+
+        .module-card.completed .status-badge,
+        .module-card.in-progress .status-badge {
+            display: inline-block;
+        }
+
+        .status-badge.in-progress-badge {
+            background-color: var(--progress-blue);
+        }
+
+        /* Toggle Checkbox */
+        .toggle-container {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #a0aec0;
+            cursor: pointer;
+        }
+        
+        .toggle-container:hover {
+            color: white;
+        }
+
+        .toggle-checkbox {
+            margin-right: 8px;
+            accent-color: var(--success-green);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hazard-stripe"></div>
+
+    <!-- Header -->
+    <header class="pt-16 pb-8 px-4 text-center">
+        <div class="max-w-4xl mx-auto">
+            <a href="index.html" class="inline-block mb-4 text-gray-400 hover:text-yellow-400 transition">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Main Hub
+            </a>
+            <p class="text-yellow-400 tracking-[0.2em] text-sm mb-2 brand-font">Industrial Installation Module (T2)</p>
+            <h1 class="text-5xl md:text-6xl font-bold mb-4">Phase 2 Electrical Instrumentation</h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">Select a learning module below. Drag and drop cards to reorder your lesson plan.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div id="module-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+
+            <!-- Unit 1 Card -->
+            <div class="module-card p-6" id="card-unit1" data-id="unit1">
+                <div class="flex items-center mb-4">
+                    <span class="bg-blue-900/50 text-blue-200 text-xs px-2 py-1 rounded border border-blue-500/30 mr-2">UNIT 1</span>
+                    <span class="status-badge" id="badge-unit1"><i class="fas fa-check mr-1"></i> Completed</span>
+                    <i class="fas fa-tools text-2xl text-gray-500 ml-auto icon-default"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 ml-auto icon-completed hidden"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white">Basic Engineering</h3>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">
+                    Master the fundamentals of metrology, hand tools, drilling, tapping, and piping systems.
+                </p>
+                <a href="Basic Engineering.html" class="btn-launch" id="btn-unit1">Start Module</a>
+                <label class="toggle-container">
+                    <input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('unit1')" id="check-unit1"> Mark as Complete
+                </label>
+            </div>
+
+            <!-- Unit 3 Card -->
+            <div class="module-card p-6" id="card-unit22" data-id="unit22">
+                <div class="flex items-center mb-4">
+                    <span class="bg-purple-900/50 text-purple-200 text-xs px-2 py-1 rounded border border-purple-500/30 mr-2">UNIT 3</span>
+                    <span class="status-badge" id="badge-unit22"><i class="fas fa-check mr-1"></i> Completed</span>
+                    <i class="fas fa-bolt text-2xl text-gray-500 ml-auto icon-default"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 ml-auto icon-completed hidden"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white">Cables & Termination</h3>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">
+                    Learn cable selection, construction types, identification, and safe termination techniques.
+                </p>
+                <a href="Cables and cable termination.html" class="btn-launch" id="btn-unit22">Start Module</a>
+                <label class="toggle-container">
+                    <input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('unit22')" id="check-unit22"> Mark as Complete
+                </label>
+            </div>
+
+            <!-- Unit 2 Card -->
+            <div class="module-card p-6" id="card-unit23" data-id="unit23">
+                <div class="flex items-center mb-4">
+                    <span class="bg-orange-900/50 text-orange-200 text-xs px-2 py-1 rounded border border-orange-500/30 mr-2">UNIT 2</span>
+                    <span class="status-badge" id="badge-unit23"><i class="fas fa-check mr-1"></i> Completed</span>
+                    <i class="fas fa-project-diagram text-2xl text-gray-500 ml-auto icon-default"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 ml-auto icon-completed hidden"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white">Conduit & Trunking</h3>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">
+                    Comprehensive guide to steel and PVC containment systems, fabrication, and capacity rules.
+                </p>
+                <a href="Conduit and trunking.html" class="btn-launch" id="btn-unit23">Start Module</a>
+                <label class="toggle-container">
+                    <input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('unit23')" id="check-unit23"> Mark as Complete
+                </label>
+            </div>
+
+            <!-- Unit 4 Card -->
+            <div class="module-card p-6" id="card-unit4" data-id="unit4">
+                <div class="flex items-center mb-4">
+                    <span class="bg-yellow-900/50 text-yellow-200 text-xs px-2 py-1 rounded border border-yellow-500/30 mr-2">UNIT 4</span>
+                    <span class="status-badge" id="badge-unit4"><i class="fas fa-check mr-1"></i> Completed</span>
+                    <i class="fas fa-lightbulb text-2xl text-gray-500 ml-auto icon-default"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 ml-auto icon-completed hidden"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white">Lighting & Circuits</h3>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">
+                    Principles of illumination, switching circuits, regulations, and safety protocols.
+                </p>
+                <a href="Lighting Circuits.html" class="btn-launch" id="btn-unit4">Start Module</a>
+                <label class="toggle-container">
+                    <input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('unit4')" id="check-unit4"> Mark as Complete
+                </label>
+            </div>
+
+            <!-- Unit 2.2.5 Card (Fixed Appliances) -->
+            <div class="module-card p-6" id="card-unit225_final" data-id="unit225_final">
+                <div class="flex items-center mb-4">
+                    <span class="bg-red-900/50 text-red-200 text-xs px-2 py-1 rounded border border-red-500/30 mr-2">UNIT 5</span>
+                    <span class="status-badge" id="badge-unit225_final"><i class="fas fa-check mr-1"></i> Completed</span>
+                    <i class="fas fa-plug text-2xl text-gray-500 ml-auto icon-default"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 ml-auto icon-completed hidden"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white">Fixed Appliance & Socket Circuits</h3>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">
+                    Design and installation of radial/ring circuits, cookers, showers, and immersion heaters.
+                </p>
+                <a href="Fixed Appliance & Socket Circuits.html" class="btn-launch" id="btn-unit225_final">Start Module</a>
+                <label class="toggle-container">
+                    <input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('unit225_final')" id="check-unit225_final"> Mark as Complete
+                </label>
+            </div>
+
+            <!-- Unit 5 Card (Electrical Hazards) -->
+            <div class="module-card p-6" id="card-unit5_ex" data-id="unit5_ex">
+                <div class="flex items-center mb-4">
+                    <span class="bg-indigo-900/50 text-indigo-200 text-xs px-2 py-1 rounded border border-indigo-500/30 mr-2">UNIT 6</span>
+                    <span class="status-badge" id="badge-unit5_ex"><i class="fas fa-check mr-1"></i> Completed</span>
+                    <i class="fas fa-exclamation-triangle text-2xl text-gray-500 ml-auto icon-default"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 ml-auto icon-completed hidden"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white">Electrical Hazards & Protection</h3>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">
+                    Comprehensive coverage of shock protection, earthing, bonding, MCBs, RCDs, and fault loop impedance.
+                </p>
+                <a href="Electrical_Hazards_Expanded.html" class="btn-launch" id="btn-unit5_ex">Start Module</a>
+                <label class="toggle-container">
+                    <input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('unit5_ex')" id="check-unit5_ex"> Mark as Complete
+                </label>
+            </div>
+
+            <!-- Unit 7 Card (Earthing & Bonding) -->
+            <div class="module-card p-6" id="card-unit7" data-id="unit7">
+                <div class="flex items-center mb-4">
+                    <span class="bg-teal-900/50 text-teal-200 text-xs px-2 py-1 rounded border border-teal-500/30 mr-2">UNIT 7</span>
+                    <span class="status-badge" id="badge-unit7"><i class="fas fa-check mr-1"></i> Completed</span>
+                    <i class="fas fa-ground text-2xl text-gray-500 ml-auto icon-default"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 ml-auto icon-completed hidden"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white">Earthing & Bonding</h3>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">
+                    Deep dive into earthing systems, protective conductors, bonding requirements, and safety measures.
+                </p>
+                <a href="Earthing_Bonding.html" class="btn-launch" id="btn-unit7">Start Module</a>
+                <label class="toggle-container">
+                    <input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('unit7')" id="check-unit7"> Mark as Complete
+                </label>
+            </div>
+
+            <!-- Unit 8 Card (Multicore Cables & Tray) -->
+            <div class="module-card p-6" id="card-unit8" data-id="unit8">
+                <div class="flex items-center mb-4">
+                    <span class="bg-pink-900/50 text-pink-200 text-xs px-2 py-1 rounded border border-pink-500/30 mr-2">UNIT 8</span>
+                    <span class="status-badge" id="badge-unit8"><i class="fas fa-check mr-1"></i> Completed</span>
+                    <i class="fas fa-network-wired text-2xl text-gray-500 ml-auto icon-default"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 ml-auto icon-completed hidden"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-3 text-white">Multicore Cables & Cable Tray</h3>
+                <p class="text-gray-400 text-sm mb-6 flex-grow">
+                    Installation and termination of SWA cables, cable tray systems, and relevant regulations.
+                </p>
+                <a href="Multicore Cables.html" class="btn-launch" id="btn-unit8">Start Module</a>
+                <label class="toggle-container">
+                    <input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('unit8')" id="check-unit8"> Mark as Complete
+                </label>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="py-6 text-center text-gray-600 text-xs border-t border-gray-800 mt-8">
+        <p>&copy; MSLETB 2025 Phase 2 Electrical Instrumentation Training</p>
+        <button onclick="resetProgress()" class="text-gray-500 hover:text-red-400 underline transition">
+            <i class="fas fa-trash-alt mr-1"></i> Reset All Progress
+        </button>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Update Status for all modules
+            updateModuleState('unit1');
+            updateModuleState('unit22');
+            updateModuleState('unit23');
+            updateModuleState('unit4');
+            updateModuleState('unit225_final');
+            updateModuleState('unit5_ex');
+            updateModuleState('unit7');
+            updateModuleState('unit8'); // For the presentation: Multicore Cables.html
+
+            // 2. Initialize Drag & Drop
+            const grid = document.getElementById('module-grid');
+            
+            // Load saved order if exists
+            const savedOrder = JSON.parse(localStorage.getItem('moduleOrder'));
+            if (savedOrder) {
+                const items = Array.from(grid.children);
+                // Sort DOM elements based on saved order array
+                items.sort((a, b) => {
+                    return savedOrder.indexOf(a.getAttribute('data-id')) - savedOrder.indexOf(b.getAttribute('data-id'));
+                });
+                items.forEach(item => grid.appendChild(item));
+            }
+
+            // Enable Sortable
+            new Sortable(grid, {
+                animation: 150,
+                ghostClass: 'sortable-ghost', // Class name for the drop placeholder
+                onEnd: function (evt) {
+                    saveOrder(); // Save new order on drop
+                }
+            });
+        });
+
+        function saveOrder() {
+            const grid = document.getElementById('module-grid');
+            // Get array of data-ids in current DOM order
+            const order = Array.from(grid.children).map(item => item.getAttribute('data-id'));
+            localStorage.setItem('moduleOrder', JSON.stringify(order));
+        }
+
+        function toggleComplete(unitId) {
+            const checkbox = document.getElementById(`check-${unitId}`);
+            const isComplete = checkbox.checked;
+            
+            if (isComplete) {
+                localStorage.setItem(unitId, 'completed');
+            } else {
+                localStorage.removeItem(unitId);
+            }
+            updateModuleState(unitId);
+        }
+
+        function updateModuleState(unitId) {
+            const isComplete = localStorage.getItem(unitId) === 'completed';
+            const savedSlide = localStorage.getItem(unitId + '_slide'); // Updated to match the key used in Multicore Cables.html if using standard pattern
+            // Note: Multicore Cables.html uses 'unit8_depth_slide' and 'unit8_depth'
+            // We should check if we need to map 'unit8' to 'unit8_depth' logic or standardise
+            // Assuming standard 'unit8' for simplicity here, but presentation logic must match.
+            // If Multicore Cables.html uses unit8_depth, we need to use that key.
+            // Let's check the presentation file provided (Multicore Cables.html). It uses 'unit8_depth_slide' and 'unit8_depth'.
+            // So for unit8 here, we need to check the correct storage key.
+            
+            let storageKey = unitId;
+            let slideKey = unitId + '_slide';
+
+            if (unitId === 'unit8') {
+                storageKey = 'unit8_depth';
+                slideKey = 'unit8_depth_slide';
+            }
+
+            const isCompleteActual = localStorage.getItem(storageKey) === 'completed';
+            const savedSlideActual = localStorage.getItem(slideKey);
+
+            
+            const card = document.getElementById(`card-${unitId}`);
+            const btn = document.getElementById(`btn-${unitId}`);
+            const checkbox = document.getElementById(`check-${unitId}`);
+            const badge = document.getElementById(`badge-${unitId}`);
+            const iconDefault = card.querySelector('.icon-default');
+            const iconCompleted = card.querySelector('.icon-completed');
+
+            checkbox.checked = isCompleteActual;
+
+            // Reset classes first
+            card.classList.remove('completed', 'in-progress');
+            btn.classList.remove('completed-btn');
+            badge.classList.remove('in-progress-badge');
+            iconDefault.classList.remove('hidden');
+            iconCompleted.classList.add('hidden');
+
+            if (isCompleteActual) {
+                // COMPLETED STATE
+                card.classList.add('completed');
+                btn.classList.add('completed-btn');
+                btn.innerHTML = 'Review Module <i class="fas fa-sync ml-2"></i>';
+                iconDefault.classList.add('hidden');
+                iconCompleted.classList.remove('hidden');
+                badge.innerHTML = '<i class="fas fa-check mr-1"></i> Completed';
+            } else if (savedSlideActual && parseInt(savedSlideActual) > 1) {
+                // IN PROGRESS STATE
+                card.classList.add('in-progress');
+                badge.classList.add('in-progress-badge');
+                badge.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> In Progress';
+                btn.innerHTML = `Resume (Slide ${savedSlideActual}) <i class="fas fa-play ml-2"></i>`;
+            } else {
+                // DEFAULT STATE
+                btn.innerHTML = 'Start Module <i class="fas fa-arrow-right ml-2"></i>';
+            }
+        }
+
+        function resetProgress() {
+            if(confirm("Are you sure you want to reset all progress and custom ordering?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+
+</body>
+</html>

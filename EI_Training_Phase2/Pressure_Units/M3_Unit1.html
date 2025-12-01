@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 1: Pressure Measurement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --steel-blue: #4a5568;
+            --accent-red: #e53e3e;
+            --accent-green: #48bb78;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--industrial-grey);
+            color: white;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .slide {
+            display: none;
+            height: 100vh;
+            padding: 2rem 4rem;
+            flex-direction: column;
+            justify-content: flex-start;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+            overflow-y: auto;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .slide.centered {
+            justify-content: center;
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .btn-nav:hover {
+            transform: translateY(-2px);
+            background-color: #ffe033;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .btn-save {
+            background-color: var(--steel-blue);
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+            border: 1px solid #718096;
+            font-size: 0.9rem;
+        }
+
+        .btn-save:hover {
+            background-color: #2d3748;
+            border-color: var(--safety-yellow);
+        }
+
+        .card {
+            background-color: #2d3748;
+            border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+        }
+
+        .card-danger { border-left-color: var(--accent-red); }
+        .card-info { border-left-color: #4299e1; }
+        .card-success { border-left-color: var(--accent-green); }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 8px;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--safety-yellow);
+            width: 0%;
+            transition: width 0.3s;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        .img-box {
+            height: 350px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 2px solid var(--steel-blue);
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+        }
+
+        .quiz-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: var(--steel-blue);
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+        }
+        .quiz-btn:hover {
+            background-color: #718096;
+        }
+        .correct { background-color: var(--accent-green) !important; color: white;}
+        .incorrect { background-color: var(--accent-red) !important; color: white;}
+
+        .formula-box {
+            background-color: #000;
+            border: 1px solid #4a5568;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--accent-green);
+            text-align: center;
+            font-size: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button onclick="saveAndExit()" class="btn-save">
+            <i class="fas fa-save mr-2"></i> Save & Exit
+        </button>
+    </div>
+
+    <div class="fixed bottom-8 right-8 z-50 flex gap-4">
+        <button onclick="prevSlide()" class="btn-nav"><i class="fas fa-chevron-left"></i> PREV</button>
+        <button onclick="nextSlide()" class="btn-nav">NEXT <i class="fas fa-chevron-right"></i></button>
+    </div>
+    
+    <div class="fixed bottom-8 left-8 z-50 text-gray-400 brand-font text-xl">
+        <span id="page-indicator">1</span> / <span id="total-pages">14</span>
+    </div>
+
+    <div class="progress-bar" id="progress"></div>
+
+    <div class="slide active centered" id="slide-1">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="text-yellow-400 text-xl mb-4 tracking-widest brand-font">Phase 2 Electrical Instrumentation</div>
+            <h1 class="text-6xl font-bold mb-6 leading-tight">Unit 1: Pressure Measurement</h1>
+            <div class="w-32 h-2 bg-yellow-400 mx-auto mb-8"></div>
+            <p class="text-2xl text-gray-300 font-light">Fundamentals, Units, Types & Safety</p>
+
+            <div id="resume-prompt" class="hidden mt-12 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left shadow-lg">
+                <p class="text-lg mb-4 text-white"><i class="fas fa-history text-green-400 mr-2"></i> Resume previous session?</p>
+                <div class="flex gap-4">
+                    <button onclick="resumeSession()" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded font-bold transition text-white">Resume</button>
+                    <button onclick="clearSession()" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded transition text-white">Start Over</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-2">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-6">What is Pressure?</h2>
+                <p class="text-gray-300 mb-4 text-lg">Ideally, why does a sharp thumbtack pierce cork easily, but the flat end doesn't?</p>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <h3 class="text-xl font-bold mb-2 text-blue-400">Definition</h3>
+                    <p class="text-gray-300">Pressure is defined as the force applied perpendicular to the surface of an object per unit area over which that force is distributed.</p>
+                    <div class="formula-box text-sm mt-4">P = F / A</div>
+                    <p class="text-sm text-gray-400 mt-2">P = Pressure | F = Force | A = Area</p>
+                </div>
+                <p class="text-gray-300 text-sm">Think: How much push (force) is spread over how much space (area).</p>
+            </div>
+            <div class="img-box bg-white">
+                
+                <img src="https://placehold.co/600x400/2d3748/FFF?text=Diagram:+Thumbtack+Force+Area" alt="Thumbtack Pressure Concept">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-3">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-8 text-center">Pressure Calculation Triangles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-pink-500">
+                    <h3 class="text-xl font-bold mb-4">Find Pressure (P)</h3>
+                    <div class="text-6xl font-bold text-white mb-4">F / A</div>
+                    <p class="text-gray-400">Pressure = Force ÷ Area</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-pink-500">
+                    <h3 class="text-xl font-bold mb-4">Find Force (F)</h3>
+                    <div class="text-6xl font-bold text-white mb-4">P × A</div>
+                    <p class="text-gray-400">Force = Pressure × Area</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-pink-500">
+                    <h3 class="text-xl font-bold mb-4">Find Area (A)</h3>
+                    <div class="text-6xl font-bold text-white mb-4">F / P</div>
+                    <p class="text-gray-400">Area = Force ÷ Pressure</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-4">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-6">What is Density?</h2>
+                <p class="text-gray-300 mb-4">Which is heavier: a bag of feathers or a small rock? The rock is denser.</p>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <h3 class="text-xl font-bold mb-2 text-green-400">Definition</h3>
+                    <p class="text-gray-300">Density is a measure of how much mass is contained in a given volume.</p>
+                    <div class="formula-box text-sm mt-4">ρ = m / V</div>
+                    <p class="text-sm text-gray-400 mt-2">ρ (rho) = Density | m = Mass | V = Volume</p>
+                </div>
+                <div class="bg-gray-900 p-3 rounded text-sm text-gray-400">
+                    <strong>Common Units:</strong> kg/m³ (SI) or lbm/ft³ (Imperial)
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Density Comparison]
+
+                <img src="https://placehold.co/600x400/2d3748/FFF?text=Diagram:+Feathers+vs+Rock" alt="Density Concept">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-5">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Types of Pressure</h2>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="card card-info">
+                    <h3 class="text-xl font-bold">Atmospheric</h3>
+                    <p class="text-sm text-gray-300">Weight of the air above us. <br>~14.7 psi / 101.3 kPa at sea level.</p>
+                </div>
+                <div class="card card-success">
+                    <h3 class="text-xl font-bold">Gauge</h3>
+                    <p class="text-sm text-gray-300">Relative to atmospheric pressure. Reads 0 at sea level.</p>
+                </div>
+                <div class="card">
+                    <h3 class="text-xl font-bold">Absolute</h3>
+                    <p class="text-sm text-gray-300">Relative to a perfect vacuum (True Zero).</p>
+                    <p class="text-xs text-yellow-400 font-mono">P_abs = P_gauge + P_atm</p>
+                </div>
+                <div class="card card-danger">
+                    <h3 class="text-xl font-bold">Vacuum</h3>
+                    <p class="text-sm text-gray-300">Pressure below atmospheric level.</p>
+                </div>
+            </div>
+            <div class="img-box h-48 mt-4 bg-white">
+                
+
+[Image of Pressure Chart]
+
+                <img src="https://placehold.co/800x200/2d3748/FFF?text=Chart:+Absolute+vs+Gauge+vs+Vacuum" alt="Pressure References Chart">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-6">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Differential Pressure (ΔP)</h2>
+                <p class="text-gray-300 mb-4 text-lg">The difference between two pressures measured at different points.</p>
+                
+                <div class="bg-gray-800 p-6 rounded border-l-4 border-yellow-500">
+                    <h3 class="font-bold mb-3 text-yellow-400">Key Applications</h3>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li><strong>Flow Rate:</strong> Across an orifice plate.</li>
+                        <li><strong>Level:</strong> In pressurized tanks.</li>
+                        <li><strong>Filters:</strong> High ΔP indicates a clogged filter.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Differential Pressure Filter]
+
+                <img src="https://placehold.co/600x400/2d3748/FFF?text=Diagram:+Differential+Pressure+Filter" alt="Filter Differential Pressure">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-7">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Units & Conversions</h2>
+            <div class="grid grid-cols-3 gap-4 text-center mb-8">
+                <div class="bg-gray-800 p-4 rounded">
+                    <div class="text-2xl font-bold text-blue-400">SI (Metric)</div>
+                    <div class="text-sm">Pascal (Pa), Bar</div>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <div class="text-2xl font-bold text-red-400">Imperial</div>
+                    <div class="text-sm">psi (lbs/in²)</div>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <div class="text-2xl font-bold text-green-400">Other</div>
+                    <div class="text-sm">mmHg, inH2O, atm</div>
+                </div>
+            </div>
+            
+            <div class="bg-black p-6 rounded border border-gray-600">
+                <h3 class="text-xl font-bold mb-4 text-center">Common Conversions</h3>
+                <div class="grid grid-cols-2 gap-4 font-mono text-gray-300 text-center">
+                    <p>1 Bar = 100 kPa</p>
+                    <p>1 Bar ≈ 14.5 psi</p>
+                    <p>1 atm ≈ 101.3 kPa</p>
+                    <p>1 psi ≈ 6.89 kPa</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-8">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 1</h2>
+            <div class="space-y-4">
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold mb-2">1. Convert 50 psi to kPa (1 psi = 6.89 kPa).</p>
+                    <button onclick="check(this, false)" class="quiz-btn">150 kPa</button>
+                    <button onclick="check(this, true)" class="quiz-btn">344.7 kPa</button>
+                    <button onclick="check(this, false)" class="quiz-btn">500 kPa</button>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold mb-2">2. What does Gauge Pressure measure relative to?</p>
+                    <button onclick="check(this, true)" class="quiz-btn">Atmospheric Pressure</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Absolute Zero</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-9">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Pressure in Fluids</h2>
+            <p class="text-gray-300 mb-6">Pressure increases with depth due to the weight of the fluid.</p>
+            
+            <div class="formula-box w-1/2 mx-auto mb-8">
+                P = ρgh
+            </div>
+            
+            <div class="grid grid-cols-3 gap-6 text-left max-w-4xl mx-auto">
+                <div class="card">
+                    <strong>ρ (Rho)</strong>
+                    <p class="text-sm text-gray-400">Density (kg/m³)</p>
+                </div>
+                <div class="card">
+                    <strong>g</strong>
+                    <p class="text-sm text-gray-400">Gravity (9.81 m/s²)</p>
+                </div>
+                <div class="card">
+                    <strong>h</strong>
+                    <p class="text-sm text-gray-400">Height/Depth (m)</p>
+                </div>
+            </div>
+            
+            <div class="bg-blue-900/30 p-4 rounded border border-blue-500 inline-block mt-4">
+                Example: 5m deep water tank (1000 kg/m³)<br>
+                P = 1000 × 9.81 × 5 = <strong>49,050 Pa</strong> (49.05 kPa)
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-10">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Calculating Force</h2>
+                <p class="text-gray-300 mb-4">We can rearrange P = F/A to find Force:</p>
+                <div class="formula-box text-lg">F = P × A</div>
+                
+                <div class="bg-gray-800 p-6 rounded mt-4 border border-gray-600">
+                    <h4 class="font-bold text-white mb-2">Example: Hydraulic Cylinder</h4>
+                    <ul class="text-sm text-gray-300 space-y-1">
+                        <li><strong>Pressure:</strong> 1000 psi</li>
+                        <li><strong>Piston Area:</strong> 20 in²</li>
+                        <li><strong>Force = </strong> 1000 × 20 = <strong>20,000 lbf</strong></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Hydraulic Force]
+
+                <img src="https://placehold.co/600x400/2d3748/FFF?text=Diagram:+Hydraulic+Force" alt="Hydraulic Force">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-11">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Pascal's Principle</h2>
+                <div class="bg-gray-800 p-6 rounded border-l-4 border-purple-500">
+                    <p class="italic text-gray-300 mb-4">"Pressure applied to a confined fluid is transmitted undiminished to every part of the fluid."</p>
+                </div>
+                <p class="text-gray-300 mt-4">This is the heart of <strong>Hydraulics</strong>.</p>
+                <div class="formula-box text-lg mt-4">F1 / A1 = F2 / A2</div>
+                <p class="text-sm text-gray-400 mt-2">A small force on a small area creates pressure that results in a LARGE force on a large area.</p>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Hydraulic Pistons]
+
+                <img src="https://placehold.co/600x400/2d3748/FFF?text=Diagram:+Hydraulic+Pistons" alt="Pascal's Principle">
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-12">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-red-500 mb-6"><i class="fas fa-exclamation-triangle"></i> Hazards & Safety</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <div class="card card-danger">
+                        <h3 class="font-bold">Stored Energy</h3>
+                        <p class="text-sm text-gray-400">High pressure fluids contain massive energy. Ruptures can cause explosions and projectiles.</p>
+                    </div>
+                    <div class="card card-danger">
+                        <h3 class="font-bold">Injection Injuries</h3>
+                        <p class="text-sm text-gray-400">High-velocity leaks (pinholes) can penetrate skin causing severe damage.</p>
+                    </div>
+                </div>
+                <div class="bg-gray-800 p-6 rounded">
+                    <h3 class="text-xl font-bold text-green-400 mb-4">Safety Measures</h3>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                        <li><strong>Relief Valves:</strong> Prevent over-pressure.</li>
+                        <li><strong>LOTO:</strong> Lock Out Tag Out before maintenance.</li>
+                        <li><strong>Purging:</strong> Depressurize lines fully.</li>
+                        <li><strong>PPE:</strong> Eye protection and gloves.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-13">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Final Knowledge Check</h2>
+            <div class="space-y-4">
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold mb-2">1. What does a Rupture Disc do?</p>
+                    <button onclick="check(this, true)" class="quiz-btn">Burst open to relieve excess pressure</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Measure vacuum</button>
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <p class="font-bold mb-2">2. Why use LOTO procedures?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">To identify equipment</button>
+                    <button onclick="check(this, true)" class="quiz-btn">To prevent accidental re-pressurization</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-14">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-5xl text-yellow-400 mb-8">Unit Complete</h2>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600 text-lg text-left">
+                <p class="mb-4">You have reviewed:</p>
+                <ul class="space-y-3 text-gray-300">
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Fundamentals:</strong> P = F/A and Density.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Types:</strong> Gauge, Absolute, Vacuum, Differential.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Calculations:</strong> Hydrostatic pressure & Pascal's Law.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Safety:</strong> Managing high-pressure hazards.</li>
+                </ul>
+            </div>
+            <div class="mt-8">
+                <button onclick="saveAndExit()" class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded text-xl font-bold transition">Complete & Exit</button>
+                <button onclick="goToSlide(1)" class="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded text-xl font-bold transition ml-4">Restart</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const UNIT_ID = 'm3_u1'; 
+        const HUB_PAGE = 'Pressure_Hub.html';
+        const TOTAL_SLIDES = 14; 
+
+        let currentSlide = 1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem(UNIT_ID + '_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+            }
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.getElementById('progress').style.width = ((currentSlide / TOTAL_SLIDES) * 100) + '%';
+        }
+
+        function nextSlide() { if(currentSlide < TOTAL_SLIDES) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+        function goToSlide(n) { currentSlide = n; updateUI(); }
+
+        function saveAndExit() {
+            localStorage.setItem(UNIT_ID + '_slide', currentSlide);
+            if(currentSlide === TOTAL_SLIDES) {
+                localStorage.setItem(UNIT_ID, 'completed');
+            }
+            alert("Progress Saved!");
+            window.location.href = HUB_PAGE;
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem(UNIT_ID + '_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem(UNIT_ID + '_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => { b.classList.remove('correct', 'incorrect'); b.style.opacity = '0.5'; });
+            btn.style.opacity = '1';
+            if(isCorrect) { btn.classList.add('correct'); btn.innerHTML += ' <i class="fas fa-check float-right"></i>'; } 
+            else { btn.classList.add('incorrect'); btn.innerHTML += ' <i class="fas fa-times float-right"></i>'; }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+        updateUI();
+    </script>
+</body>
+</html>

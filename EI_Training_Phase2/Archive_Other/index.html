@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2 Electrical Instrumentation - Course Selection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --card-bg: #2d3748;
+            --success-green: #48bb78;
+            --progress-blue: #4299e1;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--industrial-grey);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px;
+            width: 100%;
+            position: fixed;
+            top: 0; left: 0; z-index: 50;
+        }
+
+        /* Module Card Styles */
+        .module-card {
+            background-color: var(--card-bg);
+            border: 1px solid #4a5568;
+            border-radius: 0.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: grab;
+        }
+
+        .module-card:active { cursor: grabbing; }
+        .sortable-ghost { opacity: 0.4; background-color: #4a5568; border: 2px dashed var(--safety-yellow); }
+
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            border-color: var(--safety-yellow);
+        }
+
+        .module-card::before {
+            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px;
+            background-color: var(--safety-yellow); opacity: 0.5; transition: opacity 0.3s;
+        }
+        .module-card:hover::before { opacity: 1; }
+
+        .module-card.completed { border-color: var(--success-green); }
+        .module-card.completed::before { background-color: var(--success-green); opacity: 1; }
+
+        .module-card.in-progress { border-color: var(--progress-blue); }
+        .module-card.in-progress::before { background-color: var(--progress-blue); opacity: 1; }
+
+        /* Course Card Styles */
+        .course-card {
+            background-color: var(--card-bg);
+            border: 1px solid #4a5568;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250px;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--safety-yellow);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Button Styles */
+        .btn-launch, .btn-course {
+            background-color: var(--safety-yellow); color: black; font-weight: bold;
+            padding: 0.5rem 1rem; border-radius: 0.25rem; text-transform: uppercase;
+            font-family: 'Oswald', sans-serif; display: inline-block; transition: background-color 0.2s;
+            text-align: center; cursor: pointer; margin-top: 1rem;
+        }
+        .btn-launch:hover, .btn-course:hover { background-color: #e6c200; }
+        
+        .btn-disabled {
+            background-color: #4a5568;
+            color: #a0aec0;
+            cursor: not-allowed;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+            font-family: 'Oswald', sans-serif;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        /* Access Control Overlays */
+        .overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--industrial-grey); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
+        }
+
+        #login-modal, #admin-modal {
+            background-color: var(--card-bg); padding: 3rem; border-radius: 0.5rem;
+            border: 1px solid #4a5568; max-width: 500px; width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .login-input {
+            width: 100%; padding: 0.75rem; margin-bottom: 1rem;
+            background-color: #1a202c; border: 1px solid #4a5568; color: white;
+            border-radius: 0.25rem; outline: none;
+        }
+        .login-input:focus { border-color: var(--safety-yellow); }
+        .hidden { display: none !important; }
+
+        /* Admin Styles */
+        .admin-btn {
+            font-size: 0.8rem; color: #718096; margin-top: 1rem; cursor: pointer; text-decoration: underline;
+        }
+        .admin-btn:hover { color: var(--safety-yellow); }
+
+        table { width: 100%; text-align: left; font-size: 0.9rem; margin-bottom: 1rem; border-collapse: collapse; }
+        th { border-bottom: 1px solid #4a5568; padding: 0.5rem; color: var(--safety-yellow); }
+        td { border-bottom: 1px solid #2d3748; padding: 0.5rem; }
+        
+        .delete-btn { color: #f56565; cursor: pointer; transition: color 0.2s; }
+        .delete-btn:hover { color: red; }
+    </style>
+    <script>
+        // --- COURSE CONFIGURATION ---
+        
+        // ADMIN PASSWORD (CHANGE THIS!)
+        const ADMIN_PASSWORD = "admin123";
+
+        // DEFAULT CLASSES (Fallback/Initial Setup)
+        const DEFAULT_CLASSES = [
+            { id: "EI2025", name: "Class 2025 (Day)", password: "class2025", expiryDate: "2025-12-31" },
+            { id: "evening2025", name: "Class 2025 (Evening)", password: "nightclass2025", expiryDate: "2025-06-30" }
+        ];
+
+        // --- GLOBAL VARIABLES ---
+        let classes = [];
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Load Classes from Storage or Default
+            const storedClasses = localStorage.getItem('course_classes');
+            if (storedClasses) {
+                classes = JSON.parse(storedClasses);
+            } else {
+                classes = DEFAULT_CLASSES;
+                localStorage.setItem('course_classes', JSON.stringify(classes));
+            }
+
+            const loginOverlay = document.getElementById('login-overlay');
+            const adminOverlay = document.getElementById('admin-overlay');
+            const expiryOverlay = document.getElementById('expiry-overlay');
+            const expiryDateDisplay = document.getElementById('expiry-date-display');
+            const mainContent = document.getElementById('main-content');
+            
+            const classIdInput = document.getElementById('class-id-input');
+            const passwordInput = document.getElementById('password-input');
+            const loginBtn = document.getElementById('login-btn');
+            const errorMsg = document.getElementById('error-msg');
+            
+            // Admin Elements
+            const adminLoginBtn = document.getElementById('admin-login-link');
+            const adminPassInput = document.getElementById('admin-pass-input');
+            const adminLoginAction = document.getElementById('admin-login-btn');
+            const adminPanel = document.getElementById('admin-panel');
+            const adminAuth = document.getElementById('admin-auth');
+            const classTableBody = document.getElementById('class-table-body');
+            const addClassBtn = document.getElementById('add-class-btn');
+            const closeAdminBtn = document.getElementById('close-admin-btn');
+            const exportConfigBtn = document.getElementById('export-config-btn');
+
+            // --- STUDENT LOGIN LOGIC ---
+
+            // 1. Check for saved Class ID (LocalStorage persists)
+            const savedClassId = localStorage.getItem('saved_class_id');
+            if (savedClassId) {
+                classIdInput.value = savedClassId;
+            }
+
+            // 2. Check Session Auth
+            const isSessionActive = sessionStorage.getItem('course_auth_active');
+            
+            if (isSessionActive === 'true') {
+                const currentClassId = sessionStorage.getItem('current_class_id');
+                const foundClass = classes.find(c => c.id === currentClassId);
+                
+                if (foundClass) {
+                    const today = new Date();
+                    const expiry = new Date(foundClass.expiryDate);
+                    
+                    if (today > expiry) {
+                        showExpiry(foundClass.expiryDate);
+                        sessionStorage.clear();
+                    } else {
+                        showContent();
+                    }
+                } else {
+                    // Class ID might have been deleted
+                    sessionStorage.clear();
+                    showLogin();
+                }
+            } else {
+                showLogin();
+            }
+
+            function attemptLogin() {
+                const enteredId = classIdInput.value.trim();
+                const enteredPass = passwordInput.value.trim();
+                const today = new Date();
+                
+                let foundClass = classes.find(c => c.id === enteredId);
+
+                if (foundClass) {
+                    if (foundClass.password === enteredPass) {
+                        const expiry = new Date(foundClass.expiryDate);
+                        if (today > expiry) {
+                            showExpiry(foundClass.expiryDate);
+                        } else {
+                            localStorage.setItem('saved_class_id', enteredId);
+                            sessionStorage.setItem('course_auth_active', 'true');
+                            sessionStorage.setItem('current_class_id', enteredId);
+                            showContent();
+                        }
+                    } else {
+                        showError("Incorrect Password");
+                    }
+                } else {
+                    showError("Class ID not found");
+                }
+            }
+
+            function showLogin() {
+                loginOverlay.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+                expiryOverlay.classList.add('hidden');
+                adminOverlay.classList.add('hidden');
+            }
+
+            function showContent() {
+                loginOverlay.classList.add('hidden');
+                expiryOverlay.classList.add('hidden');
+                adminOverlay.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+            }
+
+            function showExpiry(dateString) {
+                loginOverlay.classList.add('hidden');
+                expiryOverlay.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+                expiryDateDisplay.innerText = dateString;
+            }
+
+            function showError(msg) {
+                errorMsg.innerText = msg;
+                errorMsg.classList.remove('hidden');
+                if(msg.includes("Password")) passwordInput.focus();
+                else classIdInput.focus();
+            }
+
+            loginBtn.addEventListener('click', attemptLogin);
+            
+            // --- ADMIN LOGIC ---
+
+            adminLoginBtn.addEventListener('click', function() {
+                loginOverlay.classList.add('hidden');
+                adminOverlay.classList.remove('hidden');
+                adminAuth.classList.remove('hidden');
+                adminPanel.classList.add('hidden');
+                adminPassInput.value = '';
+                adminPassInput.focus();
+            });
+
+            adminLoginAction.addEventListener('click', function() {
+                if (adminPassInput.value === ADMIN_PASSWORD) {
+                    adminAuth.classList.add('hidden');
+                    adminPanel.classList.remove('hidden');
+                    renderClassTable();
+                } else {
+                    alert("Invalid Admin Password");
+                }
+            });
+
+            function renderClassTable() {
+                classTableBody.innerHTML = '';
+                classes.forEach((cls, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${cls.id}</td>
+                        <td class="font-mono text-xs">${cls.password}</td>
+                        <td>${cls.expiryDate}</td>
+                        <td><i class="fas fa-trash delete-btn" onclick="window.deleteClass(${index})"></i></td>
+                    `;
+                    classTableBody.appendChild(row);
+                });
+            }
+
+            window.deleteClass = function(index) {
+                if(confirm("Delete this class?")) {
+                    classes.splice(index, 1);
+                    saveClasses();
+                    renderClassTable();
+                }
+            };
+
+            addClassBtn.addEventListener('click', function() {
+                const newId = document.getElementById('new-class-id').value.trim();
+                const newName = document.getElementById('new-class-name').value.trim();
+                const newPass = document.getElementById('new-class-pass').value.trim();
+                const newExpiry = document.getElementById('new-class-expiry').value;
+
+                if(newId && newPass && newExpiry) {
+                    if(classes.some(c => c.id === newId)) {
+                        alert("Class ID already exists!");
+                        return;
+                    }
+
+                    classes.push({ id: newId, name: newName, password: newPass, expiryDate: newExpiry });
+                    saveClasses();
+                    renderClassTable();
+                    
+                    // Clear inputs
+                    document.getElementById('new-class-id').value = '';
+                    document.getElementById('new-class-name').value = '';
+                    document.getElementById('new-class-pass').value = '';
+                } else {
+                    alert("Please fill all required fields.");
+                }
+            });
+
+            function saveClasses() {
+                localStorage.setItem('course_classes', JSON.stringify(classes));
+            }
+
+            closeAdminBtn.addEventListener('click', function() {
+                adminOverlay.classList.add('hidden');
+                showLogin();
+            });
+
+            exportConfigBtn.addEventListener('click', function() {
+                const configString = JSON.stringify(classes, null, 2);
+                alert("Copy this config to update the DEFAULT_CLASSES in the code for permanent changes:\n\n" + configString);
+                console.log(configString);
+            });
+
+            // Enter key support
+            passwordInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') attemptLogin();
+            });
+            
+            adminPassInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') adminLoginAction.click();
+            });
+            
+            // --- MODULE TRACKING LOGIC ---
+            // If "unit_pressure" is completed, mark the course as done.
+            // We use "unit_pressure" key based on the new presentation file.
+            const isPressureComplete = localStorage.getItem('unit_pressure') === 'completed';
+            const pressureCard = document.getElementById('card-pressure');
+            const pressureBtn = document.getElementById('btn-pressure');
+            
+            if(isPressureComplete && pressureCard) {
+                pressureCard.classList.add('completed'); 
+                if(pressureBtn) {
+                    pressureBtn.classList.add('completed-btn');
+                    pressureBtn.innerHTML = 'Review Module <i class="fas fa-sync ml-2"></i>';
+                }
+            }
+        });
+
+        function resetProgress() {
+            if(confirm("Are you sure you want to reset all progress and custom ordering?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <!-- LOGIN OVERLAY -->
+    <div id="login-overlay" class="overlay">
+        <div id="login-modal">
+            <i class="fas fa-user-lock text-5xl text-yellow-400 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2 text-white">Student Login</h2>
+            <p class="text-gray-400 text-sm mb-6">Please enter your Class ID and Password.</p>
+            
+            <input type="text" id="class-id-input" class="login-input" placeholder="Class ID">
+            <input type="password" id="password-input" class="login-input" placeholder="Password">
+            
+            <p id="error-msg" class="text-red-500 text-sm mb-4 hidden"><i class="fas fa-exclamation-circle"></i> Incorrect Credentials</p>
+            
+            <button id="login-btn" class="btn-course w-full">Access Course</button>
+        </div>
+        <div class="mt-8">
+            <span id="admin-login-link" class="admin-btn"><i class="fas fa-cog mr-1"></i> Admin Login</span>
+        </div>
+    </div>
+
+    <!-- ADMIN OVERLAY -->
+    <div id="admin-overlay" class="overlay hidden">
+        
+        <!-- Admin Auth -->
+        <div id="admin-auth" class="bg-gray-800 p-8 rounded border border-blue-500 text-center">
+            <h2 class="text-2xl font-bold mb-4 text-blue-400">Admin Access</h2>
+            <input type="password" id="admin-pass-input" class="login-input" placeholder="Admin Password">
+            <button id="admin-login-btn" class="btn-course w-full bg-blue-600 hover:bg-blue-500 text-white">Login</button>
+            <button onclick="location.reload()" class="mt-4 text-gray-400 text-sm underline">Cancel</button>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="admin-panel" class="hidden bg-gray-800 p-8 rounded border border-yellow-500 w-full max-w-4xl text-left h-3/4 overflow-y-auto relative">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-yellow-400">Class Management</h2>
+                <button id="close-admin-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+
+            <div class="mb-8 p-4 bg-gray-900 rounded border border-gray-700">
+                <h3 class="text-xl font-bold mb-4 text-green-400">Add New Class</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <input id="new-class-id" type="text" placeholder="Class ID *" class="login-input mb-0">
+                    <input id="new-class-name" type="text" placeholder="Display Name" class="login-input mb-0">
+                    <input id="new-class-pass" type="text" placeholder="Password *" class="login-input mb-0">
+                    <input id="new-class-expiry" type="date" class="login-input mb-0">
+                    <button id="add-class-btn" class="btn-course mt-0 bg-green-600 hover:bg-green-500 text-white border-none py-2 text-sm">Add Class</button>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-bold mb-2">Active Classes</h3>
+            <div class="overflow-x-auto bg-gray-900 rounded p-4">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Class ID</th>
+                            <th>Password</th>
+                            <th>Expiry Date</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="class-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-gray-600 flex justify-between items-center">
+                <p class="text-sm text-gray-400"><strong>Note:</strong> Changes are saved to this browser. Use Export to save permanently.</p>
+                <button id="export-config-btn" class="px-4 py-2 bg-blue-600 rounded text-sm hover:bg-blue-500 text-white font-bold">Export Config</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPIRY OVERLAY -->
+    <div id="expiry-overlay" class="overlay hidden">
+        <i class="fas fa-calendar-times text-6xl text-red-500 mb-6"></i>
+        <h1 class="text-5xl font-bold mb-4 text-white">Access Expired</h1>
+        <p class="text-xl text-gray-400">Your access to this course material has ended.</p>
+        <p class="text-sm text-gray-600 mt-4">Expiry Date: <span id="expiry-date-display" class="font-mono text-yellow-400"></span></p>
+    </div>
+
+    <!-- MAIN CONTENT (Wrapped in ID for hiding) -->
+    <div id="main-content" class="hidden flex flex-col min-h-screen w-full">
+        
+        <div class="h-2 w-full bg-gradient-to-r from-yellow-400 via-yellow-600 to-yellow-400 sticky top-0 z-50"></div>
+
+        <header class="py-12 px-4 text-center bg-gray-900/50">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 text-white">Phase 2 Electrical Instrumentation</h1>
+            <p class="text-yellow-400 text-xl tracking-widest brand-font">Course Hub</p>
+        </header>
+
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="module-grid">
+
+                <!-- Course 1: Industrial Installation -->
+                <div class="course-card" data-id="industrial">
+                    <div>
+                        <i class="fas fa-industry text-5xl text-yellow-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-white mb-2">Industrial Installation</h2>
+                        <p class="text-gray-400 text-sm">Domestic & Industrial Wiring, Containment, Lighting, and Regulations.</p>
+                    </div>
+                    <a href="industrial_installation.html" class="btn-course">Enter Course <i class="fas fa-arrow-right ml-2"></i></a>
+                </div>
+
+                <!-- Course 2: Electrical Science -->
+                <div class="course-card" data-id="elec_science">
+                    <div>
+                        <i class="fas fa-bolt text-5xl text-blue-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-white mb-2">Electrical Science</h2>
+                        <p class="text-gray-400 text-sm">Fundamentals of electricity, magnetism, AC/DC theory, and calculations.</p>
+                    </div>
+                    <button class="btn-course btn-disabled">Coming Soon</button>
+                </div>
+
+                <!-- Course 3: Pressure Measurement -->
+                <div class="course-card" id="card-pressure" data-id="pressure">
+                    <div>
+                        <i class="fas fa-tachometer-alt text-5xl text-green-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-white mb-2">Pressure Measurement</h2>
+                        <p class="text-gray-400 text-sm">Principles of pressure, gauges, transducers, and calibration.</p>
+                    </div>
+                    <!-- Updated Link -->
+                    <a href="pressure_index.html" class="btn-course" id="btn-pressure">Enter Course <i class="fas fa-arrow-right ml-2"></i></a>
+                </div>
+
+                <!-- Course 4: Flow Measurement -->
+                <div class="course-card" data-id="flow">
+                    <div>
+                        <i class="fas fa-water text-5xl text-cyan-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-white mb-2">Flow Measurement</h2>
+                        <p class="text-gray-400 text-sm">Flow dynamics, orifice plates, venturis, and magnetic flow meters.</p>
+                    </div>
+                    <button class="btn-course btn-disabled">Coming Soon</button>
+                </div>
+
+                <!-- Course 5: Temperature Measurement -->
+                <div class="course-card" data-id="temp">
+                    <div>
+                        <i class="fas fa-thermometer-half text-5xl text-red-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-white mb-2">Temperature Measurement</h2>
+                        <p class="text-gray-400 text-sm">Thermocouples, RTDs, thermistors, and temperature transmitters.</p>
+                    </div>
+                    <button class="btn-course btn-disabled">Coming Soon</button>
+                </div>
+
+                <!-- Course 6: Level Measurement -->
+                <div class="course-card" data-id="level">
+                    <div>
+                        <i class="fas fa-layer-group text-5xl text-purple-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-white mb-2">Level Measurement</h2>
+                        <p class="text-gray-400 text-sm">Hydrostatic, ultrasonic, radar, and capacitive level sensing.</p>
+                    </div>
+                    <button class="btn-course btn-disabled">Coming Soon</button>
+                </div>
+
+                <!-- Course 7: Automatic Control -->
+                <div class="course-card" data-id="control">
+                    <div>
+                        <i class="fas fa-robot text-5xl text-orange-400 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-white mb-2">Automatic Control</h2>
+                        <p class="text-gray-400 text-sm">Control loops, PID controllers, feedback systems, and PLCs.</p>
+                    </div>
+                    <button class="btn-course btn-disabled">Coming Soon</button>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="py-6 text-center text-gray-600 text-xs border-t border-gray-800 mt-8">
+            <p>&copy; MSLETB 2025 Phase 2 Electrical Instrumentation Training</p>
+            <div class="mt-2">
+                <button id="admin-login-link" class="text-gray-600 hover:text-yellow-500 underline transition">Admin Login</button>
+            </div>
+        </footer>
+    </div>
+
+</body>
+</html>

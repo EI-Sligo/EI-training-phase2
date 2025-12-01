@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2 Knowledge Check</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --card-bg: #2d3748;
+            --success-green: #48bb78;
+            --fail-red: #e53e3e;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--industrial-grey);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, .brand-font { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px; width: 100%; position: fixed; top: 0; left: 0; z-index: 50;
+        }
+
+        .btn-opt {
+            background-color: #4a5568;
+            width: 100%;
+            padding: 1rem;
+            text-align: left;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem; /* Larger text for readability */
+        }
+
+        .btn-opt:hover { background-color: #718096; border-color: var(--safety-yellow); }
+        
+        .btn-opt.correct { background-color: var(--success-green); color: white; }
+        .btn-opt.wrong { background-color: var(--fail-red); color: white; }
+
+        .btn-nav {
+            background-color: var(--safety-yellow); color: black; font-weight: bold;
+            padding: 0.75rem 2rem; border-radius: 0.25rem; font-family: 'Oswald', sans-serif;
+            transition: background 0.2s;
+        }
+        .btn-nav:hover { background-color: #e6c200; }
+
+        .progress-bar {
+            height: 6px; background: var(--safety-yellow); width: 0%; transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hazard-stripe"></div>
+
+    <div id="start-screen" class="flex-grow flex flex-col justify-center items-center text-center p-8">
+        <h1 class="text-6xl font-bold mb-6 text-white">T2 Knowledge Check</h1>
+        <div class="bg-gray-800 p-8 rounded border border-gray-600 max-w-2xl">
+            <h3 class="text-2xl text-yellow-400 mb-4">Assessment Details</h3>
+            <ul class="text-left text-gray-300 space-y-3 mb-8">
+                <li><i class="fas fa-book mr-2"></i> <strong>Scope:</strong> All 9 Installation Techniques Units.</li>
+                <li><i class="fas fa-random mr-2"></i> <strong>Format:</strong> 20 Randomly Selected Questions.</li>
+                <li><i class="fas fa-check-circle mr-2"></i> <strong>Pass Mark:</strong> 85% (17/20 Correct).</li>
+            </ul>
+            <button onclick="startQuiz()" class="btn-nav text-xl">Begin Assessment</button>
+        </div>
+    </div>
+
+    <div id="quiz-screen" class="hidden flex-col flex-grow max-w-4xl mx-auto w-full pt-12 px-4">
+        <div class="flex justify-between items-center mb-6">
+            <span class="text-gray-400 text-sm">Question <span id="q-current">1</span> of 20</span>
+            <span class="text-yellow-400 font-bold text-sm uppercase" id="topic-badge">TOPIC</span>
+        </div>
+
+        <div class="w-full bg-gray-700 h-2 rounded-full mb-8 overflow-hidden">
+            <div id="progress" class="progress-bar"></div>
+        </div>
+
+        <div class="bg-gray-800 p-8 rounded border border-gray-600 shadow-lg">
+            <h2 id="question-text" class="text-2xl font-bold mb-8 leading-relaxed text-white">Question goes here?</h2>
+            <div id="options-container">
+                </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <button id="next-btn" onclick="nextQuestion()" class="btn-nav hidden">Next Question <i class="fas fa-arrow-right ml-2"></i></button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="hidden flex-grow flex flex-col justify-center items-center text-center p-8">
+        <div id="score-card" class="bg-gray-800 p-10 rounded border border-gray-600 max-w-2xl w-full">
+            <h1 class="text-5xl font-bold mb-2 text-white">Assessment Complete</h1>
+            
+            <div class="my-8">
+                <div class="text-8xl font-bold mb-2" id="final-score">0%</div>
+                <div class="text-2xl uppercase tracking-widest" id="pass-fail-text">RESULT</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-left bg-gray-900 p-4 rounded mb-8">
+                <div><i class="fas fa-check text-green-500 mr-2"></i> Correct: <span id="count-correct">0</span></div>
+                <div><i class="fas fa-times text-red-500 mr-2"></i> Incorrect: <span id="count-wrong">0</span></div>
+            </div>
+
+            <div class="flex gap-4 justify-center">
+                <button onclick="location.reload()" class="px-6 py-3 bg-gray-600 hover:bg-gray-500 rounded font-bold">Retry <i class="fas fa-redo ml-2"></i></button>
+                <button onclick="saveAndExit()" class="btn-nav">Save & Exit <i class="fas fa-save ml-2"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =================================================================
+        //  REVISED QUESTION BANK (Full Sentences)
+        // =================================================================
+        const questionBank = [
+            
+            // UNIT 1: BASIC ENGINEERING
+            { q: "Which precision instrument is used to measure the outer diameter of a cylindrical object?", options: ["Micrometer", "Steel Rule", "Inside Caliper", "Depth Gauge"], a: 0, topic: "Basic Engineering" },
+            { q: "Which tool is specifically used to mark the centre of a hole before drilling to prevent the bit from wandering?", options: ["Scriber", "Centre Punch", "Dividers", "Chisel"], a: 1, topic: "Basic Engineering" },
+            { q: "What is the correct point angle for a general purpose twist drill bit?", options: ["90 degrees", "118 degrees", "60 degrees", "180 degrees"], a: 1, topic: "Basic Engineering" },
+            { q: "When installing a blade in a hacksaw, in which direction should the teeth point?", options: ["Towards the handle", "Away from the handle", "Alternating", "It does not matter"], a: 1, topic: "Basic Engineering" },
+            { q: "Which cutting fluid is most suitable when threading steel conduit?", options: ["Water", "Trefolex / Cutting Compound", "Engine Oil", "Dry"], a: 1, topic: "Basic Engineering" },
+            { q: "Which part of a twist drill is responsible for the actual cutting action?", options: ["The Flute", "The Web", "The Lips", "The Shank"], a: 2, topic: "Basic Engineering" },
+            { q: "What is the typical accuracy of a standard steel rule?", options: ["0.01mm", "0.5mm", "1.0mm", "0.02mm"], a: 1, topic: "Basic Engineering" },
+            { q: "What type of hacksaw blade is best suited for cutting thin wall metal tubing?", options: ["14 TPI", "18 TPI", "24 TPI", "32 TPI"], a: 3, topic: "Basic Engineering" },
+            { q: "What is the primary purpose of drilling a pilot hole?", options: ["To tap a thread", "To guide a larger drill bit", "To countersink a screw", "To measure depth"], a: 1, topic: "Basic Engineering" },
+            
+            // UNIT 2: CONDUIT & TRUNKING
+            { q: "What is the maximum space factor (fill ratio) permitted for cables in trunking?", options: ["35%", "40%", "45%", "50%"], a: 2, topic: "Conduit & Trunking" },
+            { q: "Which component must be used when joining two lengths of steel trunking to ensure earth continuity?", options: ["Running coupler", "Copper earth strap (link)", "PVC glue", "Steel wire"], a: 1, topic: "Conduit & Trunking" },
+            { q: "Expansion couplers are required on long straight runs of PVC conduit every:", options: ["3 Metres", "4 Metres", "6 Metres", "10 Metres"], a: 2, topic: "Conduit & Trunking" },
+            { q: "Which type of conduit is most suitable for outdoor installations exposed to rain?", options: ["Black Enamel", "Galvanised Steel", "Light Gauge PVC", "Oval PVC"], a: 1, topic: "Conduit & Trunking" },
+            { q: "According to conduit capacity tables, how many 1.5mm sq cables can be installed in a 2m straight run of 20mm conduit?", options: ["10", "12", "14", "16"], a: 2, topic: "Conduit & Trunking" },
+            { q: "Why are the phase and neutral conductors of an AC circuit grouped together in the same ferrous conduit?", options: ["To save space", "To prevent Eddy Currents and heating", "To increase resistance", "To reduce voltage drop"], a: 1, topic: "Conduit & Trunking" },
+            { q: "What is the minimum internal radius allowed for a 90 degree bend in 20mm steel conduit?", options: ["20mm", "50mm", "80mm", "100mm"], a: 1, topic: "Conduit & Trunking" },
+            { q: "At what temperature does standard PVC conduit begin to soften or deform?", options: ["45°C", "50°C", "60°C", "70°C"], a: 2, topic: "Conduit & Trunking" },
+
+            // UNIT 3: CABLES & TERMINATION
+            { q: "What is the primary advantage of using Copper conductors over Aluminium?", options: ["Lighter weight", "Cheaper", "Lower resistance / Better conductivity", "Higher resistance"], a: 2, topic: "Cables & Termination" },
+            { q: "Which type of cable insulation is best suited for high temperature environments like boiler rooms?", options: ["PVC", "Rubber/Flex", "Mineral Insulated (MICC)", "Polythene"], a: 2, topic: "Cables & Termination" },
+            { q: "If the length of a cable is doubled, what happens to its resistance?", options: ["It halves", "It stays the same", "It doubles", "It quadruples"], a: 2, topic: "Cables & Termination" },
+            { q: "Which of the following factors does NOT affect the current carrying capacity of a cable?", options: ["Ambient Temperature", "Installation Method", "Grouping Factor", "Voltage Rating"], a: 3, topic: "Cables & Termination" },
+            { q: "What is the primary function of the outer sheath of a cable?", options: ["Electrical Insulation", "Mechanical Protection", "Earth Continuity", "Voltage Transformation"], a: 1, topic: "Cables & Termination" },
+            { q: "Which of the following materials is NOT a conductor?", options: ["Copper", "Aluminium", "PVC", "Silver"], a: 2, topic: "Cables & Termination" },
+            { q: "What is the standard colour code for the Phase conductor in a single phase circuit?", options: ["Blue", "Brown", "Red", "Black"], a: 1, topic: "Cables & Termination" },
+            { q: "How can voltage drop in a long cable run be reduced?", options: ["Increase the length", "Increase the Cross-Sectional Area (CSA)", "Decrease the CSA", "Increase the insulation thickness"], a: 1, topic: "Cables & Termination" },
+            { q: "What is the minimum size flexible cord permitted for a pendant light fitting?", options: ["0.5 sq mm", "0.75 sq mm", "1.0 sq mm", "1.5 sq mm"], a: 1, topic: "Cables & Termination" },
+
+            // UNIT 4: LIGHTING
+            { q: "What does the abbreviation 'ES' stand for in relation to lampholders?", options: ["Electric Switch", "Edison Screw", "Emergency Supply", "Earth Strap"], a: 1, topic: "Lighting" },
+            { q: "The stroboscopic effect can make rotating machinery appear to:", options: ["Spin faster", "Spin backwards", "Be stationary", "Vibrate"], a: 2, topic: "Lighting" },
+            { q: "In a standard 2-way switching circuit, what are the wires connecting the two switches called?", options: ["Switch wires", "Feeds", "Strappers", "Lives"], a: 2, topic: "Lighting" },
+            { q: "How is a Master ON switch connected in a lighting circuit?", options: ["In series with local switches", "In parallel with local switches", "In series with the lamp", "In parallel with the lamp"], a: 1, topic: "Lighting" },
+            { q: "Which type of lamp produces light primarily through the heating effect of an electric current?", options: ["Fluorescent", "LED", "Incandescent", "Discharge"], a: 2, topic: "Lighting" },
+            { q: "Which component is responsible for improving the power factor in a fluorescent fitting?", options: ["Choke", "Starter", "Capacitor", "Tube"], a: 2, topic: "Lighting" },
+            { q: "How many terminals does a standard Two-Way light switch have?", options: ["2 (C, L1)", "3 (C, L1, L2)", "4 (L1, L2, L3, L4)", "1 (C)"], a: 1, topic: "Lighting" },
+            { q: "Which type of switch is required to control a light from 3 or more different locations?", options: ["Two-Way", "Intermediate", "Double Pole", "Master"], a: 1, topic: "Lighting" },
+
+            // UNIT 5: PROTECTIVE DEVICES
+            { q: "At what multiple of rated current does a Type B MCB trip instantaneously?", options: ["3-5 times", "5-10 times", "10-20 times", "2 times"], a: 0, topic: "Protective Devices" },
+            { q: "An RCD operates by detecting an imbalance between the currents in which conductors?", options: ["Phase and Earth", "Neutral and Earth", "Phase and Neutral", "Two Phases"], a: 2, topic: "Protective Devices" },
+            { q: "What is the maximum permitted disconnection time for a standard socket circuit?", options: ["0.2s", "0.4s", "5s", "1s"], a: 1, topic: "Protective Devices" },
+            { q: "An RCBO is a device that combines the functions of:", options: ["Switch and Fuse", "MCB and RCD", "RCD and Isolator", "Relay and Contactor"], a: 1, topic: "Protective Devices" },
+            { q: "Which electrical hazard is characterized by an explosive release of energy from a high-current short circuit?", options: ["Arc Flash", "Voltage Dip", "Eddy Current", "Harmonics"], a: 0, topic: "Protective Devices" },
+            { q: "Which MCB Type is most suitable for inductive loads like motors?", options: ["Type B", "Type C", "Type D", "Type Z"], a: 1, topic: "Protective Devices" },
+            { q: "The primary function of the main switch fuse in a consumer unit is:", options: ["Overload protection only", "Isolation and Protection", "Earth leakage protection", "Voltage regulation"], a: 1, topic: "Protective Devices" },
+
+            // UNIT 6: FIXED APPLIANCES
+            { q: "A cooker control unit should be located within what distance of the appliance?", options: ["1 meter", "2 meters", "3 meters", "4 meters"], a: 1, topic: "Fixed Appliances" },
+            { q: "In a dual immersion heater, what does the sink element heat?", options: ["The whole tank", "The top portion of the tank", "The bottom of the tank", "The cold feed"], a: 1, topic: "Fixed Appliances" },
+            { q: "What is the maximum floor area permitted for a standard ring circuit?", options: ["50 sq m", "100 sq m", "150 sq m", "200 sq m"], a: 1, topic: "Fixed Appliances" },
+            { q: "What is the maximum rating for a standard domestic socket outlet?", options: ["5 Amps", "13 Amps", "16 Amps", "32 Amps"], a: 1, topic: "Fixed Appliances" },
+            { q: "What is the standard mounting height for socket outlets above the finished floor level?", options: ["100mm", "450mm", "900mm", "1200mm"], a: 1, topic: "Fixed Appliances" },
+            { q: "What is the approximate cable size required for a 9.5kW electric shower?", options: ["2.5 sq mm", "4.0 sq mm", "10.0 sq mm", "1.5 sq mm"], a: 2, topic: "Fixed Appliances" },
+
+            // UNIT 7: EARTHING & BONDING
+            { q: "What is the standard colour identification for a protective conductor?", options: ["Brown", "Blue", "Green/Yellow", "Black"], a: 2, topic: "Earthing & Bonding" },
+            { q: "Main Equipotential Bonding connects which services to the Main Earthing Terminal?", options: ["Sinks to Radiators", "Gas/Water services", "Sockets to Lights", "Switches to Backboxes"], a: 1, topic: "Earthing & Bonding" },
+            { q: "Which earthing system uses a PME (Protective Multiple Earthing) supply?", options: ["TT", "TN-S", "TN-C-S", "IT"], a: 2, topic: "Earthing & Bonding" },
+            { q: "What is the minimum cross-sectional area for a Main Bonding Conductor?", options: ["6 sq mm", "10 sq mm", "16 sq mm", "2.5 sq mm"], a: 1, topic: "Earthing & Bonding" },
+            { q: "Which earthing system requires the consumer to provide an earth electrode?", options: ["TN-C-S", "TN-S", "TT", "TNS-C"], a: 2, topic: "Earthing & Bonding" },
+
+            // UNIT 9: INSTALLATION TESTING
+            { q: "According to ETCI Rules, what is the correct order of testing?", options: ["Live tests then Dead tests", "Visual Inspection, Dead tests, Live tests", "Insulation Resistance first", "Random order"], a: 1, topic: "Installation Testing" },
+            { q: "What is the correct test voltage for an Insulation Resistance test on a 230V circuit?", options: ["250V DC", "500V DC", "1000V DC", "230V AC"], a: 1, topic: "Installation Testing" },
+            { q: "When testing continuity of protective conductors (Method 1), what do you measure?", options: ["Phase to Neutral", "Phase to Earth (Rp+Re)", "Neutral to Earth", "Phase to Phase"], a: 1, topic: "Installation Testing" },
+            { q: "During which test can the polarity of the installation be verified?", options: ["Insulation Resistance", "Continuity (R1+R2)", "Earth Electrode", "RCD"], a: 1, topic: "Installation Testing" },
+            { q: "What is the maximum permitted trip time for an RCD at 1x rated current (30mA)?", options: ["40ms", "200ms", "300ms", "500ms"], a: 2, topic: "Installation Testing" },
+            { q: "A reading of 0.05 ohms on a continuity test indicates which condition?", options: ["Open Circuit", "Good Continuity", "High Resistance", "Short Circuit"], a: 1, topic: "Installation Testing" },
+            { q: "Which test requires the use of a 'wandering lead'?", options: ["Insulation Resistance", "Continuity of Protective Conductors (Re)", "RCD Test", "Polarity (Visual)"], a: 1, topic: "Installation Testing" },
+            { q: "When testing insulation resistance, what should be done with electronic devices?", options: ["Switch them on", "Disconnect or Isolate them", "Earth them", "Short circuit them"], a: 1, topic: "Installation Testing" },
+            { q: "A 'Figure 8' test is used to verify which aspect of an installation?", options: ["RCD trip time", "Ring Final Circuit interconnection", "Earth Electrode resistance", "Fuse rating"], a: 1, topic: "Installation Testing" },
+            { q: "Which of the following is considered a 'Live' test?", options: ["Continuity", "Insulation Resistance", "Fault Loop Impedance", "Polarity (Dead)"], a: 2, topic: "Installation Testing" }
+            // --- BATCH 5: MEGA EXPANSION (300+ QUESTIONS) ---
+
+    // --- UNIT 1: BASIC ENGINEERING ---
+    { q: "What is the included angle of a Metric ISO screw thread?", options: ["45 degrees", "55 degrees", "60 degrees", "90 degrees"], a: 2, topic: "Basic Engineering" },
+    { q: "Which grade of pencil is typically used for marking out on metal?", options: ["HB", "2H or 4H", "2B", "Charcoal"], a: 1, topic: "Basic Engineering" },
+    { q: "The 'pitch' of a hacksaw blade refers to:", options: ["The length of the blade", "The width of the blade", "The number of teeth per 25mm", "The material it is made of"], a: 2, topic: "Basic Engineering" },
+    { q: "Which file profile is flat on one side and curved on the other?", options: ["Hand file", "Warding file", "Half-round file", "Square file"], a: 2, topic: "Basic Engineering" },
+    { q: "When drilling, if the speed is too high, the drill bit will:", options: ["Cut faster", "Overheat and lose its temper", "Jam in the hole", "Break immediately"], a: 1, topic: "Basic Engineering" },
+    { q: "Which tap is used to finish a blind hole to the very bottom?", options: ["Taper tap", "Second tap", "Plug tap", "Master tap"], a: 2, topic: "Basic Engineering" },
+    { q: "What is the purpose of a 'reamer'?", options: ["To start a hole", "To cut a thread", "To enlarge a hole to an exact size and finish", "To countersink a hole"], a: 2, topic: "Basic Engineering" },
+    { q: "A 'drift' is used to:", options: ["Mark a centre line", "Remove a taper shank drill from a sleeve", "Tighten a chuck", "Measure depth"], a: 1, topic: "Basic Engineering" },
+    { q: "Which engineering square is used for checking internal and external 90 degree angles?", options: ["Try square", "Mitre square", "Combination square", "Centre square"], a: 0, topic: "Basic Engineering" },
+    { q: "What liquid is commonly used as a coolant when drilling steel?", options: ["Water", "Soluble Oil", "Engine Oil", "Turpentine"], a: 1, topic: "Basic Engineering" },
+    { q: "The 'kerf' of a saw cut refers to:", options: ["The saw handle", "The width of the cut", "The length of the blade", "The type of metal"], a: 1, topic: "Basic Engineering" },
+    { q: "Which nut has a nylon insert to prevent loosening?", options: ["Wing nut", "Castle nut", "Nyloc nut", "Dome nut"], a: 2, topic: "Basic Engineering" },
+    { q: "A 'fender' washer is characterized by:", options: ["A small outer diameter", "A large outer diameter", "A split ring", "Teeth"], a: 1, topic: "Basic Engineering" },
+    { q: "Which screwdriver tip looks like a star with 6 points?", options: ["Phillips", "Pozi", "Torx", "Slotted"], a: 2, topic: "Basic Engineering" },
+    { q: "The 'shank' of a screw is:", options: ["The threaded part", "The smooth part between head and thread", "The head", "The point"], a: 1, topic: "Basic Engineering" },
+    { q: "What is the correct angle for sharpening a centre punch?", options: ["30 degrees", "60 degrees", "90 degrees", "120 degrees"], a: 2, topic: "Basic Engineering" },
+    { q: "Which chisel is used for cutting narrow grooves or keyways?", options: ["Flat chisel", "Cross-cut (Cape) chisel", "Diamond point chisel", "Round nose chisel"], a: 1, topic: "Basic Engineering" },
+    { q: "When using a file, 'pinning' refers to:", options: ["The handle coming off", "Metal filings clogging the teeth", "The file breaking", "Using the wrong file"], a: 1, topic: "Basic Engineering" },
+    { q: "A 'thread gauge' is used to measure:", options: ["The diameter of a bolt", "The length of a bolt", "The pitch of the thread", "The depth of the thread"], a: 2, topic: "Basic Engineering" },
+    { q: "Which caliper is used to find the centre of a round bar?", options: ["Odd-leg (Jenny) caliper", "Outside caliper", "Inside caliper", "Vernier caliper"], a: 0, topic: "Basic Engineering" },
+
+    // --- UNIT 2: CONDUIT & TRUNKING ---
+    { q: "What is the maximum distance between supports for 25mm steel conduit?", options: ["1.0m", "1.2m", "1.5m", "2.0m"], a: 2, topic: "Conduit & Trunking" },
+    { q: "Which conduit fitting is used to connect a conduit to a trunking system?", options: ["Coupler", "Male bush and coupler", "Flanged coupling", "Saddle"], a: 1, topic: "Conduit & Trunking" },
+    { q: "The formula for calculating conduit capacity is:", options: ["Cable factor x Conduit factor", "Cable diameter x 2", "Sum of cable factors < Conduit factor", "Cable area x Number of cables"], a: 2, topic: "Conduit & Trunking" },
+    { q: "When installing vertical trunking, cables must be supported by:", options: ["Cable ties", "Pin racks", "Gravity", "The lid"], a: 1, topic: "Conduit & Trunking" },
+    { q: "Which IP rating is typical for standard trunking without gaskets?", options: ["IP2X", "IP4X", "IP54", "IP65"], a: 1, topic: "Conduit & Trunking" },
+    { q: "What is the purpose of a 'lockring' in a conduit system?", options: ["To join two conduits", "To lock a running coupler", "To seal the joint", "To earth the conduit"], a: 1, topic: "Conduit & Trunking" },
+    { q: "How many 2.5mm stranded cables can fit in a 20mm conduit with 2 bends (approx)?", options: ["3", "5", "8", "10"], a: 1, topic: "Conduit & Trunking" },
+    { q: "Which tool is used to bend heavy gauge steel conduit?", options: ["Internal spring", "External spring", "Portable bending machine / Stocks", "Heat gun"], a: 2, topic: "Conduit & Trunking" },
+    { q: "In a conduit system, a 'crampet' is used to:", options: ["Join conduits", "Fix conduit to the floor", "Seal the end", "Bend the pipe"], a: 1, topic: "Conduit & Trunking" },
+    { q: "Galvanised conduit should be used in:", options: ["Dry partition walls", "Damp or external environments", "Ceiling voids", "Furniture"], a: 1, topic: "Conduit & Trunking" },
+    { q: "When bending PVC conduit, an external spring is used for:", options: ["16mm conduit", "20mm conduit", "25mm conduit", "All sizes"], a: 0, topic: "Conduit & Trunking" },
+    { q: "The 'inspection elbow' allows:", options: ["Cable pulling only", "Inspection of cables", "A sharp 90 degree turn", "Expansion"], a: 1, topic: "Conduit & Trunking" },
+    { q: "What must be done to the cut ends of galvanised trunking?", options: ["Filed flat only", "Painted with zinc-rich paint", "Left bare", "Covered with tape"], a: 1, topic: "Conduit & Trunking" },
+    { q: "Multi-compartment trunking is used to:", options: ["Increase strength", "Separate different voltages/services", "Improve appearance", "Save money"], a: 1, topic: "Conduit & Trunking" },
+    { q: "A 'tee' piece in trunking requires:", options: ["No preparation", "Cutting of the side wall to protect cables", "Welding", "Glue"], a: 1, topic: "Conduit & Trunking" },
+    { q: "Flexible conduit is measured by its:", options: ["Internal diameter", "External diameter", "Length only", "Weight"], a: 0, topic: "Conduit & Trunking" },
+    { q: "What is the minimum distance between power and data cables if not screened?", options: ["25mm", "50mm", "100mm", "300mm"], a: 1, topic: "Conduit & Trunking" },
+    { q: "Which factor is 'Space Factor' based on?", options: ["30%", "40%", "45%", "60%"], a: 2, topic: "Conduit & Trunking" },
+    { q: "The 'distance saddle' acts to:", options: ["Clamp the conduit tight", "Space the conduit from the wall", "Join two conduits", "Terminate the conduit"], a: 1, topic: "Conduit & Trunking" },
+    { q: "In a vertical run of conduit exceeding 5m, you must provide:", options: ["Expansion joints", "Cable supports/clamps inside a box", "Ventilation", "Larger conduit"], a: 1, topic: "Conduit & Trunking" },
+
+    // --- UNIT 3: CABLES & TERMINATION ---
+    { q: "The resistivity of Copper is approximately:", options: ["1.68 x 10^-8 Ohm m", "2.8 x 10^-8 Ohm m", "1.0 x 10^-6 Ohm m", "100 Ohm m"], a: 0, topic: "Cables & Termination" },
+    { q: "The resistivity of Aluminium is:", options: ["Lower than Copper", "Higher than Copper", "The same as Copper", "Zero"], a: 1, topic: "Cables & Termination" },
+    { q: "Temperature Coefficient of Resistance is positive for:", options: ["Carbon", "Insulators", "Pure Metals", "Electrolytes"], a: 2, topic: "Cables & Termination" },
+    { q: "If the temperature of a copper cable rises, its resistance:", options: ["Decreases", "Increases", "Stays the same", "Becomes zero"], a: 1, topic: "Cables & Termination" },
+    { q: "A 'ferrule' is used to:", options: ["Join two cables", "Protect stranded wire ends in a terminal", "Insulate a cable", "Mark a cable"], a: 1, topic: "Cables & Termination" },
+    { q: "What is the max operating temp of 90 degree LSOH cable?", options: ["70C", "90C", "105C", "60C"], a: 1, topic: "Cables & Termination" },
+    { q: "In a 3-phase cable, the colour for Line 1 is:", options: ["Brown", "Black", "Grey", "Blue"], a: 0, topic: "Cables & Termination" },
+    { q: "In a 3-phase cable, the colour for Line 2 is:", options: ["Brown", "Black", "Grey", "Blue"], a: 1, topic: "Cables & Termination" },
+    { q: "In a 3-phase cable, the colour for Line 3 is:", options: ["Brown", "Black", "Grey", "Blue"], a: 2, topic: "Cables & Termination" },
+    { q: "The standard colour for a 110V centre-tapped earth conductor is:", options: ["Yellow", "Green/Yellow", "Blue", "White"], a: 1, topic: "Cables & Termination" },
+    { q: "Which cable type emits low smoke and fumes in a fire?", options: ["PVC", "LSF / LSOH", "SWA", "Rubber"], a: 1, topic: "Cables & Termination" },
+    { q: "The 'skin effect' describes how AC current flows:", options: ["Through the center of the conductor", "Near the surface of the conductor", "Evenly through the conductor", "Only in the insulation"], a: 1, topic: "Cables & Termination" },
+    { q: "Voltage drop is calculated using:", options: ["(mV/A/m) * I * L", "V = I * R", "P = V * I", "R = pL/A"], a: 0, topic: "Cables & Termination" },
+    { q: "If voltage drop is too high, you must:", options: ["Increase the fuse size", "Decrease the load", "Increase the cable CSA", "Shorten the run"], a: 2, topic: "Cables & Termination" },
+    { q: "What is the max permissible volt drop for lighting (residential)?", options: ["3%", "5%", "4%", "2.5%"], a: 0, topic: "Cables & Termination" },
+    { q: "What is the max permissible volt drop for other uses (residential)?", options: ["3%", "5%", "4%", "2.5%"], a: 1, topic: "Cables & Termination" },
+    { q: "A 'pre-insulated' crimp is:", options: ["A crimp with plastic sleeve attached", "A bare copper crimp", "A soldered joint", "A screw terminal"], a: 0, topic: "Cables & Termination" },
+    { q: "The ratchet on a crimping tool ensures:", options: ["The crimp is removable", "The tool opens automatically", "The full compression cycle is completed", "It cuts the wire"], a: 2, topic: "Cables & Termination" },
+    { q: "Hi-Tuff cable is an alternative to:", options: ["Twin and Earth", "SWA (where mechanical protection is lighter)", "Flex", "Data cable"], a: 1, topic: "Cables & Termination" },
+    { q: "NYMJ cable is typically:", options: ["Grey", "White", "Black", "Orange"], a: 0, topic: "Cables & Termination" },
+
+    // --- UNIT 4: LIGHTING ---
+    { q: "A 5-foot fluorescent tube is typically rated at:", options: ["18W", "36W", "58W", "70W"], a: 2, topic: "Lighting" },
+    { q: "The 'luminaire' includes:", options: ["Just the lamp", "The lamp and the holder", "The lamp, holder, and fittings", "The switch"], a: 2, topic: "Lighting" },
+    { q: "Glare is defined as:", options: ["Too little light", "Excessive contrast or brightness", "The colour of light", "Flickering light"], a: 1, topic: "Lighting" },
+    { q: "A 'grid switch' system allows:", options: ["Only one switch per plate", "Multiple modular switches on one plate", "Remote control", "Dimming only"], a: 1, topic: "Lighting" },
+    { q: "In a 1-way switch, 'C' stands for:", options: ["Circuit", "Common", "Connect", "Center"], a: 1, topic: "Lighting" },
+    { q: "Intermediate switching requires:", options: ["2 wires", "3 wires", "4 wires (2 pairs)", "5 wires"], a: 2, topic: "Lighting" },
+    { q: "A retractive switch is used for:", options: ["Standard lighting", "Door bells / Push-to-make", "Dimming", "Isolation"], a: 1, topic: "Lighting" },
+    { q: "SELV lighting operates at:", options: ["12V AC", "230V AC", "110V AC", "400V AC"], a: 0, topic: "Lighting" },
+    { q: "Which lamp type requires a high voltage ignition pulse?", options: ["Halogen", "Incandescent", "Metal Halide / SON", "LED"], a: 2, topic: "Lighting" },
+    { q: "A 'baffle' in a downlight is used to:", options: ["Increase light output", "Reduce glare", "Change colour", "Cool the lamp"], a: 1, topic: "Lighting" },
+    { q: "Emergency lighting 'lux' level on the centre line of an escape route must be min:", options: ["0.5 Lux", "1.0 Lux", "5.0 Lux", "10 Lux"], a: 1, topic: "Lighting" },
+    { q: "IP20 rating indicates protection against:", options: ["Fingers (12mm) but no water", "Wire (1mm) and splashing", "Dust and Jet", "Submersion"], a: 0, topic: "Lighting" },
+    { q: "The 'colour rendering index' (CRI) measures:", options: ["How bright a light is", "How accurately colours appear under the light", "The temperature of the lamp", "The power consumption"], a: 1, topic: "Lighting" },
+    { q: "Which lamp has the highest efficacy?", options: ["Tungsten", "Halogen", "Mercury Vapour", "LED"], a: 3, topic: "Lighting" },
+    { q: "Sodium lamps produce light that is:", options: ["White", "Blue", "Orange/Yellow", "Red"], a: 2, topic: "Lighting" },
+    { q: "To reverse the rotation of a stroboscopic image, you must:", options: ["Use DC", "Change the frequency", "Blink", "You cannot reverse it"], a: 1, topic: "Lighting" },
+    { q: "In a loop-in ceiling rose, how many terminals are in the 'Loop' block?", options: ["1", "2", "3 (Live, Neutral, Earth)", "It varies, usually 3 or 4"], a: 3, topic: "Lighting" },
+    { q: "A 'PF' capacitor is connected in:", options: ["Series", "Parallel", "Star", "Delta"], a: 1, topic: "Lighting" },
+    { q: "What happens if the PF capacitor fails open circuit?", options: ["Lamp won't light", "Lamp is dimmer", "Current increases, Lamp works", "Fuse blows"], a: 2, topic: "Lighting" },
+    { q: "Which switch is used for a bathroom fan isolator?", options: ["1-pole", "2-pole", "3-pole (Fan + Light)", "No switch"], a: 2, topic: "Lighting" },
+
+    // --- UNIT 5: PROTECTIVE DEVICES ---
+    { q: "A 'cartridge' fuse link is made of:", options: ["Copper", "Silver element in sand", "Aluminium", "Lead"], a: 1, topic: "Protective Devices" },
+    { q: "The 'breaking capacity' is the:", options: ["Normal current", "Max fault current the device can interrupt safely", "Voltage rating", "Trip time"], a: 1, topic: "Protective Devices" },
+    { q: "A BS 1362 fuse is found in:", options: ["A distribution board", "A plug top", "A street light", "A substation"], a: 1, topic: "Protective Devices" },
+    { q: "Which MCB curve trips between 10-20 times In?", options: ["Type B", "Type C", "Type D", "Type K"], a: 2, topic: "Protective Devices" },
+    { q: "An RCD with a rating of 100mA is used for:", options: ["Personal protection", "Fire protection", "Overload protection", "Short circuit"], a: 1, topic: "Protective Devices" },
+    { q: "Personal protection requires an RCD of max:", options: ["10mA", "30mA", "100mA", "300mA"], a: 1, topic: "Protective Devices" },
+    { q: "What is the 'let-through' energy of a breaker?", options: ["I²t", "V²t", "I x R", "V / I"], a: 0, topic: "Protective Devices" },
+    { q: "A 'time-delayed' (S-type) RCD is used to:", options: ["Protect people", "Provide discrimination", "Save money", "Trip faster"], a: 1, topic: "Protective Devices" },
+    { q: "Which device is 'polarity sensitive'?", options: ["Fuse", "AC MCB", "Electronic RCBO (some types)", "Isolator"], a: 2, topic: "Protective Devices" },
+    { q: "The main switch in a domestic board is usually:", options: ["32A", "63A or 100A", "10A", "200A"], a: 1, topic: "Protective Devices" },
+    { q: "What does 'In' stand for?", options: ["Instantaneous Current", "Nominal (Rated) Current", "Neutral Current", "Internal Current"], a: 1, topic: "Protective Devices" },
+    { q: "What does 'I delta n' stand for?", options: ["Short circuit current", "Overload current", "Residual operating current", "Earth fault current"], a: 2, topic: "Protective Devices" },
+    { q: "IP2X is tested with:", options: ["Standard Test Finger", "1mm Wire", "2.5mm Wire", "Sphere"], a: 0, topic: "Protective Devices" },
+    { q: "IPXXB is equivalent to:", options: ["IP2X", "IP3X", "IP4X", "IP5X"], a: 0, topic: "Protective Devices" },
+    { q: "IPXXD is equivalent to:", options: ["IP2X", "IP4X (Wire)", "IP5X", "IP1X"], a: 1, topic: "Protective Devices" },
+    { q: "The first digit of IP rating refers to:", options: ["Water", "Solids/Dust", "Impact", "Oil"], a: 1, topic: "Protective Devices" },
+    { q: "The second digit of IP rating refers to:", options: ["Water", "Solids/Dust", "Impact", "Voltage"], a: 0, topic: "Protective Devices" },
+    { q: "Which device protects against voltage spikes?", options: ["MCB", "RCD", "SPD", "AFDD"], a: 2, topic: "Protective Devices" },
+    { q: "Arc Fault Detection Devices (AFDDs) are mandatory in:", options: ["All sockets", "Lighting circuits", "Sleeping accommodation (Recommended/Mandatory in some regs)", "Garages"], a: 2, topic: "Protective Devices" },
+    { q: "An RCBO trips on:", options: ["Overload only", "Residual current only", "Both Overload and Residual current", "Voltage surge"], a: 2, topic: "Protective Devices" },
+
+    // --- UNIT 6: FIXED APPLIANCES ---
+    { q: "What is the definition of a 'Stationary Appliance'?", options: ["Can be moved easily", "Fixed or mass > 18kg", "Held in hand", "Battery operated"], a: 1, topic: "Fixed Appliances" },
+    { q: "A fixed appliance must have a means of:", options: ["Speed control", "Local isolation", "Remote control", "Dimming"], a: 1, topic: "Fixed Appliances" },
+    { q: "The flex outlet plate must be:", options: ["Fused", "Unfused", "Switched", "Used for connection"], a: 3, topic: "Fixed Appliances" },
+    { q: "Standard immersion heater power?", options: ["1kW", "2kW", "3kW", "5kW"], a: 2, topic: "Fixed Appliances" },
+    { q: "Standard shower power range?", options: ["1-2kW", "3-4kW", "7-10kW", "15-20kW"], a: 2, topic: "Fixed Appliances" },
+    { q: "Cooker circuit cable size (Typical)?", options: ["2.5mm", "4.0mm", "6.0mm or 10.0mm", "16.0mm"], a: 2, topic: "Fixed Appliances" },
+    { q: "Immersion heater cable size?", options: ["1.5mm", "2.5mm Heat Resistant", "4.0mm", "6.0mm"], a: 1, topic: "Fixed Appliances" },
+    { q: "Can a socket be installed in a bathroom?", options: ["Yes, anywhere", "No, never", "Only Shaver (Zone 2) or 3m from bath", "Only 110V"], a: 2, topic: "Fixed Appliances" },
+    { q: "IP rating for Zone 0?", options: ["IPX4", "IPX5", "IPX7", "IP20"], a: 2, topic: "Fixed Appliances" },
+    { q: "Voltage limit for Zone 0?", options: ["12V AC SELV", "50V AC", "110V AC", "230V AC"], a: 0, topic: "Fixed Appliances" },
+    { q: "A spur feeding a fixed appliance must be:", options: ["Unfused", "Fused (FCU)", "Switched only", "Plugged"], a: 1, topic: "Fixed Appliances" },
+    { q: "Maximum load on a 32A Ring Circuit?", options: ["32A", "20A", "Unlimited", "7kW"], a: 0, topic: "Fixed Appliances" },
+    { q: "Radial circuit 20A area limit?", options: ["20 sq m", "50 sq m", "100 sq m", "Unlimited"], a: 1, topic: "Fixed Appliances" },
+    { q: "Radial circuit 32A area limit?", options: ["50 sq m", "75 sq m", "100 sq m", "Unlimited"], a: 1, topic: "Fixed Appliances" },
+    { q: "Night storage heaters charge using:", options: ["Convection", "Radiation", "Off-peak electricity", "Gas"], a: 2, topic: "Fixed Appliances" },
+    { q: "Underfloor heating requires:", options: ["RCD protection", "Metal conduit", "Mineral cable", "3 Phase"], a: 0, topic: "Fixed Appliances" },
+    { q: "Which alarm detects fast flaming fires?", options: ["Optical", "Ionisation", "Heat", "CO"], a: 1, topic: "Fixed Appliances" },
+    { q: "Which alarm detects smouldering fires?", options: ["Optical", "Ionisation", "Heat", "CO"], a: 0, topic: "Fixed Appliances" },
+    { q: "The 'interconnect' wire in smoke alarms is usually:", options: ["Blue", "Brown", "Yellow (or White/Black in 3-core)", "Green"], a: 2, topic: "Fixed Appliances" },
+    { q: "A 'fireman's switch' is required for:", options: ["Domestic lighting", "Exterior discharge lighting > 1kV / Neon signs", "Showers", "Cookers"], a: 1, topic: "Fixed Appliances" },
+
+    // --- UNIT 7: EARTHING ---
+    { q: "What does 'Equipotential' mean?", options: ["Equal Current", "Equal Resistance", "Equal Voltage (Potential)", "Equal Power"], a: 2, topic: "Earthing & Bonding" },
+    { q: "The resistance of the human body (dry) is approx:", options: ["100 Ohms", "1,000 Ohms (1 kOhm)", "10,000 Ohms", "1 Megohm"], a: 1, topic: "Earthing & Bonding" },
+    { q: "A current of 50mA through the heart can cause:", options: ["Mild tingle", "Burns", "Ventricular Fibrillation", "Muscle lock"], a: 2, topic: "Earthing & Bonding" },
+    { q: "The 'Touch Voltage' limit in normal conditions is:", options: ["25V", "50V", "110V", "230V"], a: 1, topic: "Earthing & Bonding" },
+    { q: "The 'Touch Voltage' limit in agricultural/wet conditions is:", options: ["12V", "25V", "50V", "110V"], a: 1, topic: "Earthing & Bonding" },
+    { q: "Which conductor connects the MET to the Earth Electrode?", options: ["Protective Conductor", "Bonding Conductor", "Earthing Conductor", "Neutral"], a: 2, topic: "Earthing & Bonding" },
+    { q: "A 'clean earth' is used for:", options: ["Heavy machinery", "IT / Computer equipment (Noise free)", "Lighting", "Motors"], a: 1, topic: "Earthing & Bonding" },
+    { q: "In a TN-S system, the earth path is:", options: ["The cable sheath", "The neutral", "The ground", "The water pipe"], a: 0, topic: "Earthing & Bonding" },
+    { q: "In a TT system, the earth path is:", options: ["The cable sheath", "The neutral", "The general mass of earth", "The sky"], a: 2, topic: "Earthing & Bonding" },
+    { q: "Which system has the highest Ze?", options: ["TN-S", "TN-C-S", "TT", "TNS"], a: 2, topic: "Earthing & Bonding" },
+    { q: "Typical max Ze for TN-C-S?", options: ["0.35 Ohms", "0.8 Ohms", "21 Ohms", "200 Ohms"], a: 0, topic: "Earthing & Bonding" },
+    { q: "Typical max Ze for TN-S?", options: ["0.35 Ohms", "0.8 Ohms", "21 Ohms", "200 Ohms"], a: 1, topic: "Earthing & Bonding" },
+    { q: "Typical max Ze for TT?", options: ["0.35 Ohms", "0.8 Ohms", "21 Ohms (recommended < 200)", "1 Ohm"], a: 2, topic: "Earthing & Bonding" },
+    { q: "Why is gas pipe bonded within 600mm?", options: ["To save cable", "To be before any branches/meter", "To look tidy", "To avoid heat"], a: 1, topic: "Earthing & Bonding" },
+    { q: "Can a gas pipe be used as an earth electrode?", options: ["Yes", "No, never", "Only if copper", "Only if steel"], a: 1, topic: "Earthing & Bonding" },
+    { q: "The Adiabatic Equation is:", options: ["V=IR", "P=VI", "S = Root(I²t) / k", "Z = R + X"], a: 2, topic: "Earthing & Bonding" },
+    { q: "In the adiabatic equation, 'k' represents:", options: ["Current", "Time", "Material constant", "Voltage"], a: 2, topic: "Earthing & Bonding" },
+    { q: "What device provides protection if Loop Impedance is too high?", options: ["Fuse", "MCB", "RCD", "Switch"], a: 2, topic: "Earthing & Bonding" },
+    { q: "Supplementary bonding leads in a bathroom are usually:", options: ["2.5mm / 4.0mm", "6.0mm", "10.0mm", "1.0mm"], a: 0, topic: "Earthing & Bonding" },
+    { q: "Exposed conductive parts must be:", options: ["Insulated", "Earthed", "Removed", "Painted"], a: 1, topic: "Earthing & Bonding" },
+
+    // --- UNIT 8: MULTICORE CABLES ---
+    { q: "What is the purpose of the 'screen' in data cables?", options: ["Mechanical strength", "To prevent EMI/RFI", "To carry power", "To waterproof"], a: 1, topic: "Multicore Cables" },
+    { q: "What is 'crosstalk'?", options: ["People talking", "Signal interference between adjacent pairs", "Voltage drop", "Short circuit"], a: 1, topic: "Multicore Cables" },
+    { q: "Why are data cable pairs twisted?", options: ["To make it stronger", "To cancel out interference", "To make it thinner", "To identify them"], a: 1, topic: "Multicore Cables" },
+    { q: "Which category cable supports 1Gbps (Gigabit)?", options: ["Cat 3", "Cat 5", "Cat 5e / Cat 6", "Coax"], a: 2, topic: "Multicore Cables" },
+    { q: "Coaxial cable is mainly used for:", options: ["Mains power", "TV / Satellite / CCTV", "Lighting", "Heating"], a: 1, topic: "Multicore Cables" },
+    { q: "The impedance of standard TV Coax is:", options: ["50 Ohms", "75 Ohms", "100 Ohms", "600 Ohms"], a: 1, topic: "Multicore Cables" },
+    { q: "Fibre optic mode for long distance?", options: ["Multi-mode", "Single-mode", "Plastic mode", "Copper mode"], a: 1, topic: "Multicore Cables" },
+    { q: "What is 'Band I' voltage?", options: ["ELV (Data/Comms)", "LV (Mains)", "MV", "HV"], a: 0, topic: "Multicore Cables" },
+    { q: "What is 'Band II' voltage?", options: ["ELV", "LV (Mains)", "MV", "HV"], a: 1, topic: "Multicore Cables" },
+    { q: "Band I and Band II circuits must be:", options: ["Twisted", "Segregated / Separated", "Joined", "Ignored"], a: 1, topic: "Multicore Cables" },
+    { q: "Cable tray 'earth links' are required:", options: ["Only on aluminium", "Across every joint (unless certified)", "Never", "Only outdoors"], a: 1, topic: "Multicore Cables" },
+    { q: "When cutting cable tray, you should:", options: ["Leave sharp edges", "File/Deburr and apply zinc spray", "Bend it", "Use heat"], a: 1, topic: "Multicore Cables" },
+    { q: "Ladder rack is used for:", options: ["Small data cables", "Heavy power cables", "Lighting only", "Domestic"], a: 1, topic: "Multicore Cables" },
+    { q: "Basket tray is ideal for:", options: ["Heavy armour", "Data/Instrument cables (ventilation)", "Water pipes", "Gas pipes"], a: 1, topic: "Multicore Cables" },
+    { q: "Which SWA armour is magnetic?", options: ["Steel wire", "Aluminium wire", "Copper braid", "Lead"], a: 0, topic: "Multicore Cables" },
+    { q: "Single core armoured cables use which armour?", options: ["Steel (AWA)", "Aluminium (AWA)", "Iron", "Lead"], a: 1, topic: "Multicore Cables" },
+    { q: "Why use Aluminium armour on single core cables?", options: ["Cheaper", "Non-magnetic (prevents eddy currents/heating)", "Stronger", "Lighter"], a: 1, topic: "Multicore Cables" },
+    { q: "What tool tightens a cable gland?", options: ["Pliers", "Spanner / Wrench", "Hammer", "Screwdriver"], a: 1, topic: "Multicore Cables" },
+    { q: "The 'shroud' on a gland:", options: ["Seals the cable", "Covers the metal gland (Corrosion/Water)", "Acts as a locknut", "Cuts the wire"], a: 1, topic: "Multicore Cables" },
+    { q: "Fire-tuff / FP cables should be fixed with:", options: ["Plastic clips", "Metal clips (P-clips)", "Tape", "Glue"], a: 1, topic: "Multicore Cables" },
+
+    // --- UNIT 9: INSTALLATION TESTING ---
+    { q: "What document is issued upon completion of a new installation?", options: ["Receipt", "Completion Certificate", "Periodic Report", "Minor Works Cert"], a: 1, topic: "Installation Testing" },
+    { q: "Who regulates electrical contractors in Ireland?", options: ["ESB", "Safe Electric / CRU", "ETCI", "HSA"], a: 1, topic: "Installation Testing" },
+    { q: "Which test detects a 'high resistance' joint?", options: ["Insulation Resistance", "Continuity", "Polarity", "RCD"], a: 1, topic: "Installation Testing" },
+    { q: "What current does a continuity tester deliver?", options: ["1mA", "200mA minimum", "1A", "10A"], a: 1, topic: "Installation Testing" },
+    { q: "In the Ring Circuit Test, Step 2 (Figure 8) checks for:", options: ["Continuity", "Interconnections / Bridges", "Insulation", "Earth fault"], a: 1, topic: "Installation Testing" },
+    { q: "What should the reading be for 'Cross-Connected' L-N at each socket?", options: ["Zero", "Substantially the same (R1+Rn)/4", "Infinite", "Varying"], a: 1, topic: "Installation Testing" },
+    { q: "If you get a reading of 0.00 Megohms during IR testing:", options: ["The insulation is perfect", "There is a dead short", "The battery is flat", "The leads are broken"], a: 1, topic: "Installation Testing" },
+    { q: "When testing a 3-phase motor for IR, you test:", options: ["Phase to Phase", "Phase to Earth", "Both", "Neither"], a: 2, topic: "Installation Testing" },
+    { q: "A low resistance reading between L and N on a final circuit suggests:", options: ["Good insulation", "A lamp or appliance is left plugged in", "Open circuit", "No power"], a: 1, topic: "Installation Testing" },
+    { q: "When testing Ze, the main earthing conductor must be:", options: ["Connected", "Disconnected from the MET (to isolate parallel paths)", "Shorting L and N", "Removed"], a: 1, topic: "Installation Testing" },
+    { q: "PFC stands for:", options: ["Potential Fault Current", "Prospective Fault Current", "Primary Fuse Current", "Power Factor Correction"], a: 1, topic: "Installation Testing" },
+    { q: "PSCC stands for:", options: ["Power Supply Circuit Current", "Prospective Short Circuit Current", "Phase Sequence Current Check", "Primary Short Circuit"], a: 1, topic: "Installation Testing" },
+    { q: "Which is usually higher, PSCC or PEFC?", options: ["PEFC", "PSCC (Short between L-N is usually lower resistance than L-E)", "Same", "Zero"], a: 1, topic: "Installation Testing" },
+    { q: "The IP rating for a test probe (GS38) is to limit exposed tip to:", options: ["10mm", "4mm or 2mm", "20mm", "50mm"], a: 1, topic: "Installation Testing" },
+    { q: "Which category meter is required for incoming mains (CAT)?", options: ["CAT I", "CAT II", "CAT III / IV", "None"], a: 2, topic: "Installation Testing" },
+    { q: "Phase Sequence testing ensures:", options: ["Motors rotate correct way", "Lights work", "RCD trips", "Fuses don't blow"], a: 0, topic: "Installation Testing" },
+    { q: "Correct phase sequence is:", options: ["L1, L3, L2", "L1, L2, L3", "L3, L2, L1", "Random"], a: 1, topic: "Installation Testing" },
+    { q: "Volt drop is verified by:", options: ["Calculation (mV/A/m)", "Measuring voltage at load", "Both", "Guessing"], a: 2, topic: "Installation Testing" },
+    { q: "Functional testing includes:", options: ["RCD test button", "Switching lights", "Testing Interlocks", "All of these"], a: 3, topic: "Installation Testing" },
+    { q: "A 'Minor Works' certificate is for:", options: ["New house", "Rewire", "Alteration / Addition to existing circuit", "Commercial"], a: 2, topic: "Installation Testing" }
+        ];
+
+        // =================================================================
+        //  QUIZ ENGINE
+        // =================================================================
+        
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startQuiz() {
+            const shuffled = shuffleArray([...questionBank]);
+            currentQuestions = shuffled.slice(0, 20);
+            currentIndex = 0;
+            score = 0;
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('quiz-screen').classList.add('flex');
+            
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = currentQuestions[currentIndex];
+            
+            document.getElementById('q-current').innerText = currentIndex + 1;
+            document.getElementById('topic-badge').innerText = q.topic;
+            document.getElementById('question-text').innerText = q.q;
+            document.getElementById('progress').style.width = `${((currentIndex) / 20) * 100}%`;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            document.getElementById('next-btn').classList.add('hidden');
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-opt text-white';
+                btn.innerText = opt;
+                btn.onclick = () => selectAnswer(btn, index, q.a);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(btn, index, correctIndex) {
+            const buttons = document.querySelectorAll('.btn-opt');
+            buttons.forEach(b => b.disabled = true);
+
+            if (index === correctIndex) {
+                btn.classList.add('correct');
+                btn.innerHTML += ' <i class="fas fa-check float-right"></i>';
+                score++;
+            } else {
+                btn.classList.add('wrong');
+                btn.innerHTML += ' <i class="fas fa-times float-right"></i>';
+                buttons[correctIndex].classList.add('correct');
+                buttons[correctIndex].innerHTML += ' <i class="fas fa-check float-right"></i>';
+            }
+
+            document.getElementById('next-btn').classList.remove('hidden');
+            if(currentIndex === 19) {
+                document.getElementById('next-btn').innerText = "Finish Assessment";
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if(currentIndex < 20) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('flex');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('result-screen').classList.add('flex');
+
+            const percentage = (score / 20) * 100;
+            const passed = percentage >= 85;
+
+            document.getElementById('final-score').innerText = `${percentage}%`;
+            document.getElementById('count-correct').innerText = score;
+            document.getElementById('count-wrong').innerText = 20 - score;
+
+            const resultText = document.getElementById('pass-fail-text');
+            const scoreCard = document.getElementById('score-card');
+
+            if(passed) {
+                resultText.innerText = "PASSED";
+                resultText.className = "text-2xl uppercase tracking-widest text-green-500 font-bold";
+                scoreCard.style.borderColor = "#48bb78";
+            } else {
+                resultText.innerText = "FAILED (Req 85%)";
+                resultText.className = "text-2xl uppercase tracking-widest text-red-500 font-bold";
+                scoreCard.style.borderColor = "#e53e3e";
+            }
+        }
+
+        function saveAndExit() {
+            const percentage = (score / 20) * 100;
+            if(percentage >= 85) {
+                localStorage.setItem('kc_t2', 'completed');
+            }
+            window.location.href = 'Knowledge_Hub.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 2.2.5: Fixed Appliance & Socket Circuits</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #2d3748;
+            --steel-blue: #4a5568;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: white;
+            overflow: hidden;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .slide {
+            display: none;
+            height: 100vh;
+            padding: 2rem 4rem;
+            flex-direction: column;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            overflow-y: auto;
+        }
+
+        @media (max-height: 800px) {
+            .slide {
+                justify-content: flex-start;
+                padding-top: 4rem;
+            }
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-nav:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-save {
+            background-color: #4a5568;
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+            border: 1px solid #718096;
+            font-size: 0.9rem;
+        }
+
+        .btn-save:hover {
+            background-color: #2d3748;
+            border-color: var(--safety-yellow);
+        }
+
+        .card {
+            background-color: #2d3748;
+            border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+        }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--safety-yellow);
+            width: 0%;
+            transition: width 0.3s;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        .img-box {
+            height: 350px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 2px solid #4a5568;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+        }
+
+        .quiz-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #4a5568;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+        }
+        .quiz-btn:hover {
+            background-color: #718096;
+        }
+        .correct { background-color: #48bb78 !important; }
+        .incorrect { background-color: #f56565 !important; }
+
+        .def-term {
+            color: var(--safety-yellow);
+            font-weight: bold;
+            font-size: 1.1rem;
+            font-family: 'Oswald', sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button onclick="saveAndExit()" class="btn-save">
+            <i class="fas fa-save mr-2"></i> Save & Exit
+        </button>
+    </div>
+
+    <div class="fixed bottom-8 right-8 z-50 flex gap-4">
+        <button onclick="prevSlide()" class="btn-nav"><i class="fas fa-chevron-left"></i> PREV</button>
+        <button onclick="nextSlide()" class="btn-nav">NEXT <i class="fas fa-chevron-right"></i></button>
+    </div>
+    
+    <div class="fixed bottom-8 left-8 z-50 text-gray-400 brand-font text-xl">
+        <span id="page-indicator">1</span> / <span id="total-pages">32</span>
+    </div>
+
+    <div class="progress-bar" id="progress"></div>
+
+    <!-- SLIDE 1: Title -->
+    <div class="slide active" id="slide-1">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="text-yellow-400 text-xl mb-4 tracking-widest brand-font">Phase 2 Electrical Instrumentation</div>
+            <h1 class="text-6xl font-bold mb-6">Unit 2.2.5: Fixed Appliance & Socket Circuits</h1>
+            <div class="w-24 h-2 bg-yellow-400 mx-auto mb-8"></div>
+            <p class="text-xl text-gray-300">Comprehensive Review: Principles, Installation, Testing & Regulations</p>
+
+            <!-- Resume Prompt -->
+            <div id="resume-prompt" class="hidden mt-8 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left">
+                <p class="text-lg mb-4"><i class="fas fa-history text-green-400 mr-2"></i> You have a saved session.</p>
+                <div class="flex gap-4">
+                    <button onclick="resumeSession()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded font-bold transition">
+                        Resume from Slide <span id="saved-slide-num"></span>
+                    </button>
+                    <button onclick="clearSession()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition">
+                        Start Over
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: Definitions -->
+    <div class="slide" id="slide-2">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Key Definitions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card">
+                    <span class="def-term">Portable Equipment</span>
+                    <p class="text-gray-300 mt-2">Equipment designed to be moved while in operation or easily moved while connected to the supply.</p>
+                </div>
+                <div class="card">
+                    <span class="def-term">Hand-Held Equipment</span>
+                    <p class="text-gray-300 mt-2">Portable equipment intended to be held in the hand during normal use (motor is integral).</p>
+                </div>
+                <div class="card">
+                    <span class="def-term">Stationary Equipment</span>
+                    <p class="text-gray-300 mt-2">Fixed equipment or equipment without a handle having a mass greater than 18kg (e.g., Washing Machine).</p>
+                </div>
+                <div class="card">
+                    <span class="def-term">Fixed Equipment</span>
+                    <p class="text-gray-300 mt-2">Equipment fastened to a support or secured at a specific location.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: Socket Outlets (Types) -->
+    <div class="slide" id="slide-3">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-6">Socket Outlet Types</h2>
+                <div class="space-y-4">
+                    <div class="card">
+                        <strong class="text-lg text-white">13A Flat Pin (IS 411 / BS 1363)</strong>
+                        <p class="text-gray-400">The standard for domestic use. Features shuttered apertures for safety.</p>
+                    </div>
+                    <div class="card">
+                        <strong class="text-lg text-white">16A Side Earth (Continental)</strong>
+                        <p class="text-gray-400">Two pin with side earth contacts. Rare in modern Irish installations but found in guest houses.</p>
+                    </div>
+                    <div class="card">
+                        <strong class="text-lg text-white">5A Round Pin</strong>
+                        <p class="text-gray-400">Permitted by ETCI for connection of table lamps controlled by a central switch.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-col gap-4">
+                <div class="img-box bg-white" style="height: 200px;">
+                    <img src="https://www.fastlec.co.uk/media/catalog/product/p/o/polar-sockets_vucm0g6imurg7zfj.jpg?width=265&height=265&store=default&image-type=image" alt="13A Flat Pin Socket">
+                </div>
+                <div class="img-box bg-white" style="height: 200px;">
+                    <img src="https://m.media-amazon.com/images/I/71jvAi+QP+L.jpg" alt="16A Side Earth Socket">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: Plug Tops -->
+    <div class="slide" id="slide-4">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">The 13A Plug Top</h2>
+            <div class="card border-green-500" style="border-left-color: #48bb78;">
+                <h3 class="text-xl font-bold mb-4">Safety Features</h3>
+                <ul class="list-disc pl-5 space-y-3 text-lg text-gray-300">
+                    <li><strong>Fused:</strong> Protects the flexible cord (not the appliance).</li>
+                    <li><strong>Insulated Pins:</strong> Live and Neutral pins are insulated at the base to prevent shock if touched while partially inserted.</li>
+                    <li><strong>Shutter Interlock:</strong> Earth pin is longer to open the shutters on the socket.</li>
+                </ul>
+            </div>
+            <div class="grid grid-cols-3 gap-4 mt-6 text-center">
+                <div class="bg-gray-800 p-4 rounded"><span class="block text-2xl font-bold text-red-400">3A</span><span class="text-sm">Small Appliances</span></div>
+                <div class="bg-gray-800 p-4 rounded"><span class="block text-2xl font-bold text-gray-400">5A</span><span class="text-sm">Medium Load</span></div>
+                <div class="bg-gray-800 p-4 rounded"><span class="block text-2xl font-bold text-yellow-400">13A</span><span class="text-sm">Heaters / Kettles</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: Mounting Heights -->
+    <div class="slide" id="slide-5">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-8">Mounting Heights & Locations</h2>
+            <div class="grid grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                    <div class="bg-gray-800 p-6 rounded border-l-4 border-yellow-500">
+                        <i class="fas fa-ruler-vertical text-3xl mb-2 text-yellow-500"></i>
+                        <h3 class="text-xl font-bold">Standard Height</h3>
+                        <p class="text-gray-300"><strong>450mm</strong> to centre of socket.</p>
+                        <p class="text-gray-400 text-sm mt-1">Range: 400mm - 1200mm above finished floor level (FFL).</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded border-l-4 border-blue-500">
+                        <i class="fas fa-wheelchair text-3xl mb-2 text-blue-500"></i>
+                        <h3 class="text-xl font-bold">Accessibility</h3>
+                        <p class="text-gray-300">For elderly or disabled access, increase height to <strong>1100mm</strong>.</p>
+                    </div>
+                </div>
+                <div class="card border-red-500" style="border-left-color: #f56565;">
+                    <h3 class="font-bold text-red-400 mb-2">Kitchen Worktops</h3>
+                    <p class="text-gray-300">Must be at least <strong>100mm</strong> above worktop level.</p>
+                    <hr class="border-gray-600 my-4">
+                    <h3 class="font-bold text-red-400 mb-2">RCD Protection</h3>
+                    <p class="text-gray-300">All general-purpose socket outlets must be protected by a <strong>30mA RCD</strong>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: Radial Final Circuits -->
+    <div class="slide" id="slide-6">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Radial Final Circuit</h2>
+                <p class="text-gray-300 mb-4">A linear chain where each socket is fed from the previous one, terminating at the last socket.</p>
+                <div class="bg-gray-800 p-5 rounded border border-green-500 mb-4">
+                    <h3 class="font-bold text-green-400 border-b border-gray-600 pb-2 mb-2">Radial Rules</h3>
+                    <ul class="text-gray-300 space-y-2 text-sm">
+                        <li><i class="fas fa-check text-green-500 w-6"></i> <strong>Max Area:</strong> 2 Rooms.</li>
+                        <li><i class="fas fa-check text-green-500 w-6"></i> <strong>Max Sockets:</strong> 10 outlets.</li>
+                        <li><i class="fas fa-check text-green-500 w-6"></i> <strong>Cable:</strong> Min 2.5mm².</li>
+                        <li><i class="fas fa-check text-green-500 w-6"></i> <strong>Protection:</strong> 20A MCB (Type B).</li>
+                    </ul>
+                </div>
+                <div class="p-3 bg-gray-900 rounded text-sm text-gray-400">
+                    <strong>Note:</strong> A kitchen should be supplied by at least <strong>two</strong> radial circuits.
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://www.dses.co.uk/images/Images/Tips/radials.jpg" alt="Radial Circuit Diagram">
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: Ring Final Circuits -->
+    <div class="slide" id="slide-7">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Ring Final Circuit</h2>
+                <p class="text-gray-300 mb-4">A loop starting and ending at the same terminals in the distribution board. Saves copper and allows higher loads.</p>
+                <div class="bg-gray-800 p-5 rounded border border-blue-500 mb-4">
+                    <h3 class="font-bold text-blue-400 border-b border-gray-600 pb-2 mb-2">Ring Rules</h3>
+                    <ul class="text-gray-300 space-y-2 text-sm">
+                        <li><i class="fas fa-check text-blue-500 w-6"></i> <strong>Max Area:</strong> 100m² floor area.</li>
+                        <li><i class="fas fa-check text-blue-500 w-6"></i> <strong>Sockets:</strong> Unlimited (within area).</li>
+                        <li><i class="fas fa-check text-blue-500 w-6"></i> <strong>Cable:</strong> 2.5mm².</li>
+                        <li><i class="fas fa-check text-blue-500 w-6"></i> <strong>Protection:</strong> 32A MCB.</li>
+                    </ul>
+                </div>
+                <div class="p-3 bg-gray-900 rounded text-sm text-gray-400">
+                    <strong>CCC:</strong> Cable Current Carrying Capacity must be ≥ 0.67 times the rating of the protective device. (32 x 0.67 = 21.44A).
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://www.dses.co.uk/images/Images/Tips/rings.jpg" alt="Ring Circuit Diagram">
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: Spurs -->
+    <div class="slide" id="slide-8">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Spurs (Branch Connections)</h2>
+            <p class="text-xl text-gray-300 mb-8">A spur is a branch connection from a ring final circuit.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-3">Unfused Spur</h3>
+                    <p class="text-gray-300">Connected directly to the ring cable.</p>
+                    <p class="text-sm text-yellow-500 mt-2 font-bold">Limit: Only one socket outlet (single or twin) allowed per unfused spur.</p>
+                </div>
+                <div class="card border-l-4 border-green-500" style="border-left-color: #48bb78;">
+                    <h3 class="text-xl font-bold mb-3">Fused Spur</h3>
+                    <p class="text-gray-300">Connected via a <strong>Fused Connection Unit (FCU)</strong>.</p>
+                    <p class="text-sm text-green-400 mt-2 font-bold">Can supply fixed appliances or multiple sockets (as the fuse limits the current).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: Testing: Polarity -->
+    <div class="slide" id="slide-9">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Testing: Polarity</h2>
+            <div class="bg-gray-800 p-8 rounded border-l-8 border-red-500 mb-6">
+                <h3 class="text-2xl font-bold text-red-500 mb-2">WARNING</h3>
+                <p class="text-xl">This test must be carried out with the supply <strong>DISCONNECTED</strong>.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Purpose</h3>
+                    <p class="text-gray-300">To ensure:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-2 text-gray-400">
+                        <li>Phase (L) is connected to the fuse/switch.</li>
+                        <li>Neutral (N) is connected to the neutral terminal.</li>
+                        <li>Earth (E) is connected to the earth terminal.</li>
+                        <li>ES lamp centre contact is Live.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Method (Dead Test)</h3>
+                    <ol class="list-decimal pl-5 mt-2 space-y-2 text-gray-400">
+                        <li>Remove circuit fuse/open MCB.</li>
+                        <li>Unplug all appliances.</li>
+                        <li>Connect a long trailing lead to the Phase at the distribution board.</li>
+                        <li>Test to Phase terminal at every socket using an Ohmmeter.</li>
+                        <li>Reading should be very low (close to 0Ω).</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 10: Testing: Ring Continuity (End to End) -->
+    <div class="slide" id="slide-10">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Testing: Ring Continuity (Stage 1)</h2>
+            <p class="text-gray-300 mb-6 text-lg">Essential to ensure there are no open circuits (breaks) in the ring, which would cause overloading.</p>
+            
+            <div class="grid grid-cols-3 gap-6 text-center">
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-red-500">
+                    <h3 class="font-bold text-xl mb-2">Phase Loop</h3>
+                    <p class="text-sm text-gray-400">Measure resistance end-to-end (r1)</p>
+                    <div class="text-2xl font-bold mt-2 text-white">0.3Ω</div>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-black">
+                    <h3 class="font-bold text-xl mb-2">Neutral Loop</h3>
+                    <p class="text-sm text-gray-400">Measure resistance end-to-end (rn)</p>
+                    <div class="text-2xl font-bold mt-2 text-white">0.3Ω</div>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-green-500">
+                    <h3 class="font-bold text-xl mb-2">Earth Loop</h3>
+                    <p class="text-sm text-gray-400">Measure resistance end-to-end (r2)</p>
+                    <div class="text-2xl font-bold mt-2 text-white">0.3Ω</div>
+                </div>
+            </div>
+            <div class="mt-8 p-4 bg-blue-900/30 border border-blue-500 rounded text-center">
+                <strong>Result:</strong> All three readings should be substantially the same (for 2.5mm² Twin & Earth, cpc is 1.5mm² so r2 will be higher, approx 1.67x r1).
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 11: Testing: Ring Continuity (Figure 8) -->
+    <div class="slide" id="slide-11">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Testing: Ring Continuity (Stage 2)</h2>
+            <p class="text-gray-300 mb-4">To confirm the absence of bridges (short cuts) in the ring.</p>
+            
+            <div class="flex flex-row items-center justify-around bg-gray-800 p-8 rounded border border-gray-600">
+                <div class="text-left w-1/2">
+                    <h3 class="text-2xl font-bold mb-4">The "Figure 8" Connection</h3>
+                    <ul class="list-disc pl-5 space-y-3 text-gray-300">
+                        <li>Cross connect Phase 1 to Neutral 2.</li>
+                        <li>Cross connect Phase 2 to Neutral 1.</li>
+                        <li>Measure resistance at every socket outlet (L to N).</li>
+                    </ul>
+                </div>
+                <div class="text-left w-1/2 border-l border-gray-600 pl-8">
+                    <h3 class="text-2xl font-bold mb-4">Expected Result</h3>
+                    <p class="text-gray-300 mb-4">Readings at all sockets should be substantially the same.</p>
+                    <div class="bg-green-900/50 p-3 rounded text-green-300 font-bold text-center">
+                        Within ± 0.05Ω
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 12: Special Outlets (Shaver) -->
+    <div class="slide" id="slide-12">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Shaver Socket</h2>
+                <div class="bg-gray-800 p-6 rounded border border-blue-500">
+                    <h3 class="text-xl font-bold mb-2">Safety Isolating Transformer</h3>
+                    <p class="text-gray-300 mb-4">Required for use in bathrooms (Zone 2).</p>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li><strong>Dual Voltage:</strong> 115V / 230V.</li>
+                        <li><strong>Floating:</strong> Separated from Earth potential.</li>
+                        <li><strong>Protection:</strong> Self-resetting thermal cut-out.</li>
+                        <li><strong>Switching:</strong> Insertion of plug activates supply.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://pressbooks.online.ucf.edu/app/uploads/sites/96/2019/08/Figure_24_08_08.jpg" alt="Shaver Transformer Diagram">
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 13: Immersion Heaters (Construction) -->
+    <div class="slide" id="slide-13">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Immersion Heaters</h2>
+                <p class="text-gray-300 mb-4">Element Construction:</p>
+                <div class="space-y-3">
+                    <div class="card p-3">
+                        <strong>Spiral Heater:</strong> Nichrome wire.
+                    </div>
+                    <div class="card p-3">
+                        <strong>Insulation:</strong> Compacted Magnesium Oxide (MgO). Efficient heat conductor, electrical insulator.
+                    </div>
+                    <div class="card p-3">
+                        <strong>Sheath:</strong> Copper (or Incoloy for hard water).
+                    </div>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://backend.advancedwater.co.uk/storage/pdf/Blogs/Immersion%20Heater/Immersion%20Heater%20Diagram.png" alt="Immersion Construction">
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 14: Immersion Thermostat -->
+    <div class="slide" id="slide-14">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Thermostat</h2>
+                <div class="bg-gray-800 p-6 rounded border border-gray-600">
+                    <h3 class="text-xl font-bold mb-3">Bi-Metal Rod Type</h3>
+                    <p class="text-gray-300 mb-2">Operates on differential expansion of Brass tube vs Invar rod.</p>
+                    <ul class="list-disc pl-5 text-gray-300 text-sm space-y-2">
+                        <li><strong>Action:</strong> Snap action magnet (reduces arcing).</li>
+                        <li><strong>Setting:</strong> 60°C (Hard water) - 80°C (Soft water).</li>
+                        <li><strong>Differential:</strong> 5-15°F (2-8°C) between cut-out and cut-in.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWAiKfq8ERui5nlnvctzd1fduy5WsG9-ZkJsUVC9y3DhC3nYShnbuj8cA0Bej9c2AP_Ug_m3NED1v6vG8kvm0kZB73rDZQlLEzTbT97tRHt02QuVw7HkXak_oHHlEAElIIkuNfigNJnh8m/s640/How+a+Thermostats+Work.jpg" alt="Bimetal Thermostat Diagram">
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 15: Dual Immersion Configuration -->
+    <div class="slide" id="slide-15">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-8">Dual Element Configuration</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div class="bg-gray-800 p-8 rounded border-t-8 border-green-500">
+                    <h3 class="text-3xl font-bold mb-2">SINK</h3>
+                    <p class="text-gray-400 uppercase tracking-widest mb-4">Short Element</p>
+                    <div class="text-left space-y-2">
+                        <p><strong>Volume:</strong> ~10 Gallons (Top of cylinder)</p>
+                        <p><strong>Power:</strong> ~2 kW</p>
+                        <p><strong>Resistance:</strong> <span class="text-green-400 font-bold text-xl">High (~25Ω)</span></p>
+                    </div>
+                </div>
+                <div class="bg-gray-800 p-8 rounded border-t-8 border-blue-500">
+                    <h3 class="text-3xl font-bold mb-2">BATH</h3>
+                    <p class="text-gray-400 uppercase tracking-widest mb-4">Long Element</p>
+                    <div class="text-left space-y-2">
+                        <p><strong>Volume:</strong> ~30 Gallons (Full cylinder)</p>
+                        <p><strong>Power:</strong> ~3 kW</p>
+                        <p><strong>Resistance:</strong> <span class="text-blue-400 font-bold text-xl">Low (~17Ω)</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 16: Immersion Control -->
+    <div class="slide" id="slide-16">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Wiring & Control</h2>
+            <div class="card">
+                <h3 class="text-xl font-bold mb-2">The Circuit</h3>
+                <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                    <li>Separate Radial Circuit.</li>
+                    <li>2.5mm² Twin & Earth cable.</li>
+                    <li><strong>Heat Resistant Flex</strong> from switch to heater.</li>
+                    <li>Protected by 20A MCB and RCD.</li>
+                </ul>
+            </div>
+            <div class="card border-blue-500">
+                <h3 class="text-xl font-bold mb-2">The Switch</h3>
+                <p class="text-gray-300">Dual Immersion Switch (Bath/Sink). Incorporates:</p>
+                <ul class="list-disc pl-5 mt-2 text-gray-400">
+                    <li>Double Pole Isolation (20A).</li>
+                    <li>Changeover Switch (Sink/Bath).</li>
+                    <li>Neon Indicator (On/Off).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 17: Immersion Safety -->
+    <div class="slide" id="slide-17">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-red-500 mb-6"><i class="fas fa-exclamation-circle"></i> Safety Cut-Out</h2>
+            <div class="bg-gray-800 p-8 rounded shadow-lg border border-red-500 inline-block text-left">
+                <p class="text-xl text-gray-300 mb-4">To prevent boiling water if the thermostat fails closed.</p>
+                <ul class="list-disc pl-5 space-y-4 text-gray-300">
+                    <li><strong>Mechanism:</strong> Independent over-temperature cut-out.</li>
+                    <li><strong>Reset:</strong> Manual reset button (often on the thermostat head).</li>
+                    <li><strong>Operation:</strong> Will trip if water boils due to stat failure OR external heat sources (e.g. solid fuel stove).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 18: Knowledge Check (Immersion Faults) -->
+    <div class="slide" id="slide-18">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Immersion Fault Diagnosis</h2>
+            <p class="text-center text-gray-400 mb-6">Using a multimeter between Common (C) and Terminals.</p>
+            
+            <div class="space-y-4">
+                <div class="bg-gray-800 p-4 rounded flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500">Reading:</p>
+                        <p class="font-bold text-lg">Sink to Common = 0Ω</p>
+                    </div>
+                    <button onclick="check(this, true)" class="quiz-btn w-48">Short Circuit</button>
+                    <button onclick="check(this, false)" class="quiz-btn w-48">Open Circuit</button>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500">Reading:</p>
+                        <p class="font-bold text-lg">Bath to Common = Infinity</p>
+                    </div>
+                    <button onclick="check(this, false)" class="quiz-btn w-48">Short Circuit</button>
+                    <button onclick="check(this, true)" class="quiz-btn w-48">Open Circuit</button>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500">Reading:</p>
+                        <p class="font-bold text-lg">Common to Stat = Infinity</p>
+                    </div>
+                    <button onclick="check(this, false)" class="quiz-btn w-48">Element Fault</button>
+                    <button onclick="check(this, true)" class="quiz-btn w-48">Thermostat Fault</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 19: Cookers (Load Calculation) -->
+    <div class="slide" id="slide-19">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Cooker Diversity Calculation</h2>
+            <div class="bg-gray-800 p-6 rounded mb-6">
+                <p class="text-gray-400 mb-2">Total Load Example: 12,740 Watts (12.74 kW)</p>
+                <p class="text-xl font-bold mb-4">Step 1: Find Total Current</p>
+                <p class="font-mono bg-black p-2 rounded">I = P / V = 12740 / 230 ≈ <strong>55 Amps</strong></p>
+            </div>
+            
+            <div class="bg-gray-800 p-6 rounded border border-blue-500">
+                <p class="text-xl font-bold mb-4 text-blue-400">Step 2: Apply Diversity Rule</p>
+                <ul class="list-decimal pl-5 space-y-2 text-gray-300">
+                    <li>First 10 Amps.</li>
+                    <li>Plus 30% of the remainder.</li>
+                    <li>Plus 5A if socket outlet in control unit.</li>
+                </ul>
+                <div class="mt-4 font-mono bg-black p-4 rounded border-l-4 border-green-500">
+                    Remainder = 55A - 10A = 45A<br>
+                    30% of 45A = 13.5A<br>
+                    Total = 10A + 13.5A = <strong>23.5A</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 20: Cooker Installation -->
+    <div class="slide" id="slide-20">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Cooker Installation</h2>
+                <div class="card">
+                    <h3 class="font-bold mb-2">Circuit</h3>
+                    <p class="text-gray-300">6mm² Cable. 32A MCB protection.</p>
+                </div>
+                <div class="card border-red-500" style="border-left-color: #f56565;">
+                    <h3 class="font-bold mb-2 text-red-400">Switch Location</h3>
+                    <p class="text-gray-300">Must be within <strong>2 metres</strong> of the cooker, but NOT directly above it.</p>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold mb-2">Connection</h3>
+                    <p class="text-gray-300">Via Cooker Connection Unit. Use heat resistant flex allowing cooker to be moved for cleaning.</p>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://www.new.ie/images/thumbs/0019272_2-gang-45a-double-pole-cooker-switch-with-neon-tall_360.jpeg" alt="Cooker Switch">
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 21: Bathroom Zones (Definitions) -->
+    <div class="slide" id="slide-21">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-4xl text-yellow-400 mb-6">Bathroom Zones</h2>
+                <div class="space-y-4 text-lg">
+                    <div class="bg-gray-800 p-4 border-l-4 border-red-600">
+                        <strong class="text-red-400">Zone 0</strong>
+                        <p>Interior of bath or shower basin.</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 border-l-4 border-orange-500" style="border-left-color: #ed8936;">
+                        <strong class="text-orange-400">Zone 1</strong>
+                        <p>Up to 2.25m height above Zone 0.</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 border-l-4 border-yellow-500">
+                        <strong class="text-yellow-400">Zone 2</strong>
+                        <p>Extends 0.6m horizontally from Zone 1.</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 border-l-4 border-green-500" style="border-left-color: #48bb78;">
+                        <strong class="text-green-400">Zone 3</strong>
+                        <p>Extends 2.4m horizontally from Zone 2.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://www.electricradiatorsdirect.co.uk/media/wysiwyg/zones.jpg" alt="Bathroom Zones Diagram">
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 22: Equipment in Bathrooms -->
+    <div class="slide" id="slide-22">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-8">Equipment Permitted</h2>
+            <table class="w-full text-left bg-gray-800 rounded overflow-hidden">
+                <thead class="bg-gray-700 text-yellow-400 uppercase">
+                    <tr>
+                        <th class="p-4">Zone</th>
+                        <th class="p-4">IP Rating</th>
+                        <th class="p-4">Permitted Equipment</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-300">
+                    <tr class="border-b border-gray-600">
+                        <td class="p-4 font-bold">0</td>
+                        <td class="p-4">IPX7</td>
+                        <td class="p-4">12V SELV appliances only.</td>
+                    </tr>
+                    <tr class="border-b border-gray-600">
+                        <td class="p-4 font-bold">1</td>
+                        <td class="p-4">IPX4</td>
+                        <td class="p-4">Water Heaters, 25V SELV.</td>
+                    </tr>
+                    <tr class="border-b border-gray-600">
+                        <td class="p-4 font-bold">2</td>
+                        <td class="p-4">IPX4</td>
+                        <td class="p-4">Shaver Units, Luminaires.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="mt-6 bg-red-900/40 p-4 border border-red-500 rounded text-center">
+                <i class="fas fa-bolt mr-2"></i> Every circuit in a bathroom must be protected by a <strong>30mA RCD</strong>.
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 23: Electric Showers (Circuit) -->
+    <div class="slide" id="slide-23">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Electric Showers</h2>
+                <div class="card">
+                    <h3 class="font-bold mb-2">High Load</h3>
+                    <p class="text-gray-300">Ratings 7.5kW to 10.5kW. Requires heavy cable (6mm² - 10mm²) and 40A protection.</p>
+                </div>
+                <div class="card border-blue-500">
+                    <h3 class="font-bold mb-2 text-blue-400">Isolation</h3>
+                    <p class="text-gray-300">Ceiling mounted <strong>Pull Cord Switch</strong>.</p>
+                    <ul class="list-disc pl-5 mt-2 text-sm text-gray-400">
+                        <li>Double Pole.</li>
+                        <li>Mechanical Flag Indicator (Neon not sufficient for isolation proof).</li>
+                        <li>Located outside Zone 0.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                <img src="https://media.rs-online.com/F0325400-01.jpg" alt="Pull Cord Switch">
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 24: Shower Operation -->
+    <div class="slide" id="slide-24">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Shower Operation</h2>
+            <div class="bg-gray-800 p-8 rounded inline-block text-left max-w-3xl">
+                <h3 class="text-2xl font-bold mb-4">Temperature vs Flow</h3>
+                <p class="text-gray-300 mb-4">Electric showers heat water instantaneously. The temperature depends on how long the water stays in contact with the element.</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-blue-900/50 p-4 rounded text-center border border-blue-500">
+                        <span class="block text-3xl font-bold"><i class="fas fa-water"></i> Fast Flow</span>
+                        <span class="text-sm">Cooler Water</span>
+                    </div>
+                    <div class="bg-red-900/50 p-4 rounded text-center border border-red-500">
+                        <span class="block text-3xl font-bold"><i class="fas fa-tint-slash"></i> Slow Flow</span>
+                        <span class="text-sm">Hotter Water</span>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-sm mt-4 italic">Note: In winter, incoming water is colder (5°C), so flow must be reduced to get a hot shower.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 25: Cable Resistance -->
+    <div class="slide" id="slide-25">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Cable Resistance Factors</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-800 p-6 rounded text-center">
+                    <i class="fas fa-ruler-horizontal text-4xl text-blue-400 mb-4"></i>
+                    <h3 class="text-xl font-bold">Length</h3>
+                    <p class="text-gray-400 mt-2">Resistance <strong>Increases</strong> with length.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded text-center">
+                    <i class="fas fa-expand-alt text-4xl text-green-400 mb-4"></i>
+                    <h3 class="text-xl font-bold">CSA (Area)</h3>
+                    <p class="text-gray-400 mt-2">Resistance <strong>Decreases</strong> as area increases.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded text-center">
+                    <i class="fas fa-atom text-4xl text-yellow-400 mb-4"></i>
+                    <h3 class="text-xl font-bold">Material</h3>
+                    <p class="text-gray-400 mt-2">Copper is standard (low resistivity).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 26: Voltage Drop -->
+    <div class="slide" id="slide-26">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Voltage Drop Limits</h2>
+            <div class="bg-gray-800 p-8 rounded border border-red-500 inline-block">
+                <p class="text-xl text-gray-300 mb-4">ETCI Rules Max Permissible Drop:</p>
+                <div class="text-6xl font-bold text-white mb-2">4%</div>
+                <p class="text-gray-400">of nominal voltage</p>
+                <hr class="border-gray-600 my-6">
+                <p class="text-2xl">4% of 230V = <span class="text-yellow-400 font-bold">9.2 Volts</span></p>
+            </div>
+            <p class="mt-6 text-gray-400">If Voltage Drop is excessive > Increase Cable Size.</p>
+        </div>
+    </div>
+
+    <!-- SLIDE 27: Volt Drop Calculation -->
+    <div class="slide" id="slide-27">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Calculating Volt Drop</h2>
+            <div class="bg-gray-800 p-6 rounded mb-6">
+                <p class="text-lg mb-2">Formula using mV/A/m table:</p>
+                <p class="font-mono bg-black p-3 rounded text-green-400">VD = (mV x I x L) / 1000</p>
+            </div>
+            
+            <div class="bg-gray-900 p-6 rounded border border-gray-700">
+                <h3 class="text-xl font-bold mb-4">Example:</h3>
+                <ul class="space-y-2 font-mono text-gray-300">
+                    <li>Cable: 2.5mm² (18 mV/A/m)</li>
+                    <li>Current (I): 15 Amps</li>
+                    <li>Length (L): 25 Metres</li>
+                </ul>
+                <div class="mt-4 p-4 bg-black rounded border-l-4 border-yellow-500">
+                    VD = (18 x 15 x 25) / 1000<br>
+                    VD = 6750 / 1000<br>
+                    <span class="text-xl font-bold text-white">VD = 6.75 Volts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 28: Power Loss -->
+    <div class="slide" id="slide-28">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Power Loss in Cables</h2>
+            <p class="text-gray-300 mb-6">Current flowing through resistance produces heat. This is wasted energy.</p>
+            
+            <div class="bg-gray-800 p-8 rounded text-center">
+                <p class="text-2xl font-bold mb-4">Formula: P = I²R</p>
+                
+                <div class="bg-black p-6 rounded inline-block text-left mt-4 border border-gray-600">
+                    <h4 class="text-gray-400 text-sm mb-2">Example Calculation:</h4>
+                    <p class="font-mono">Current (I) = 30 Amps</p>
+                    <p class="font-mono">Resistance (R) = 0.2 Ohms</p>
+                    <hr class="border-gray-700 my-2">
+                    <p class="font-mono text-lg">P = 30² x 0.2</p>
+                    <p class="font-mono text-lg">P = 900 x 0.2</p>
+                    <p class="font-mono text-2xl font-bold text-red-400 mt-2">P = 180 Watts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 29: ETCI Rules Ref -->
+    <div class="slide" id="slide-29">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">ETCI Rules Reference</h2>
+            <div class="grid grid-cols-2 gap-4 text-sm text-gray-300">
+                <div class="bg-gray-800 p-4 rounded">
+                    <strong>554.1:</strong> Plug and Socket Outlets
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <strong>555.1:</strong> Appliances
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <strong>Annex 55A:</strong> Final Circuit Arrangements
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <strong>701:</strong> Special Locations (Bathrooms)
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <strong>Table 52A:</strong> Installation Methods
+                </div>
+                <div class="bg-gray-800 p-4 rounded">
+                    <strong>537:</strong> Functional Switching
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 30: Comprehensive Quiz 1 -->
+    <div class="slide" id="slide-30">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Quiz (1/2)</h2>
+            <div class="bg-gray-800 p-5 rounded mb-3">
+                <p class="font-bold mb-2">1. Convert 7,800,000 ohms to Mega ohms.</p>
+                <button onclick="check(this, true)" class="quiz-btn">7.8 MΩ</button>
+                <button onclick="check(this, false)" class="quiz-btn">78 MΩ</button>
+            </div>
+            <div class="bg-gray-800 p-5 rounded mb-3">
+                <p class="font-bold mb-2">2. Max floor area for a Ring Circuit?</p>
+                <button onclick="check(this, true)" class="quiz-btn">100m²</button>
+                <button onclick="check(this, false)" class="quiz-btn">50m²</button>
+            </div>
+            <div class="bg-gray-800 p-5 rounded mb-3">
+                <p class="font-bold mb-2">3. Incandescent lamps use which effect?</p>
+                <button onclick="check(this, false)" class="quiz-btn">Magnetic</button>
+                <button onclick="check(this, true)" class="quiz-btn">Heating</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 31: Comprehensive Quiz 2 -->
+    <div class="slide" id="slide-31">
+        <div class="max-w-4xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Quiz (2/2)</h2>
+            <div class="bg-gray-800 p-5 rounded mb-3">
+                <p class="font-bold mb-2">4. A fuse operates when?</p>
+                <button onclick="check(this, true)" class="quiz-btn">Too high a current flows</button>
+                <button onclick="check(this, false)" class="quiz-btn">Voltage drops</button>
+            </div>
+            <div class="bg-gray-800 p-5 rounded mb-3">
+                <p class="font-bold mb-2">5. Resistance of cable increases with?</p>
+                <button onclick="check(this, true)" class="quiz-btn">Increase in length</button>
+                <button onclick="check(this, false)" class="quiz-btn">Increase in CSA</button>
+            </div>
+            <div class="bg-gray-800 p-5 rounded mb-3">
+                <p class="font-bold mb-2">6. How many radial circuits in a kitchen?</p>
+                <button onclick="check(this, false)" class="quiz-btn">1</button>
+                <button onclick="check(this, true)" class="quiz-btn">2</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 32: Final Summary -->
+    <div class="slide" id="slide-32">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-5xl text-yellow-400 mb-8">Unit Complete</h2>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600 text-lg text-left">
+                <p class="mb-4">You have reviewed:</p>
+                <ul class="space-y-3 text-gray-300">
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> Socket Circuits (Ring/Radial) & Testing.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> Appliances (Cooker, Immersion, Shower).</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> Safety Zones & RCD requirements.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> Calculations (Diversity, Volt Drop, Power).</li>
+                </ul>
+            </div>
+            <div class="mt-8">
+                <button onclick="goToSlide(1)" class="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded text-xl font-bold transition">Restart Presentation</button>
+            </div>
+        </div>
+    </div>
+
+  <script>
+        let currentSlide = 1;
+        const totalSlides = 32; // Make sure this matches your actual total slide count
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem('unit225_final_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+                document.getElementById('saved-slide-num').innerText = savedSlide;
+            }
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.getElementById('progress').style.width = ((currentSlide / totalSlides) * 100) + '%';
+        }
+
+        function nextSlide() { 
+            if(currentSlide < totalSlides) { 
+                currentSlide++; 
+                updateUI(); 
+            } 
+        }
+        
+        function prevSlide() { 
+            if(currentSlide > 1) { 
+                currentSlide--; 
+                updateUI(); 
+            } 
+        }
+        
+        function goToSlide(n) { 
+            currentSlide = n; 
+            updateUI(); 
+        }
+
+        function saveAndExit() {
+            localStorage.setItem('unit225_final_slide', currentSlide);
+            if(currentSlide === totalSlides) {
+                localStorage.setItem('unit225_final', 'completed');
+            }
+            alert("Progress Saved!");
+            window.location.href = 'Installation_Techniques_Hub.html';
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem('unit225_final_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem('unit225_final_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => {
+                b.classList.remove('correct', 'incorrect');
+                b.style.opacity = '0.5';
+            });
+            btn.style.opacity = '1';
+            if(isCorrect) {
+                btn.classList.add('correct');
+                btn.innerHTML += ' <i class="fas fa-check float-right"></i>';
+            } else {
+                btn.classList.add('incorrect');
+                btn.innerHTML += ' <i class="fas fa-times float-right"></i>';
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>
