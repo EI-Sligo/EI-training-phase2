@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 2: Digital & Liquid Manometers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+        :root { --safety-yellow: #FFD700; --industrial-grey: #1a202c; --steel-blue: #4a5568; --accent-red: #e53e3e; --accent-green: #48bb78; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--industrial-grey); color: white; overflow: hidden; margin: 0; }
+        h1, h2, h3, .brand-font { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        .slide { display: none; height: 100vh; padding: 2rem 4rem; flex-direction: column; justify-content: flex-start; opacity: 0; transition: opacity 0.4s ease-in-out; overflow-y: auto; position: relative; box-sizing: border-box; }
+        .slide.active { display: flex; opacity: 1; }
+        .slide.centered { justify-content: center; }
+        .btn-nav { background-color: var(--safety-yellow); color: black; font-weight: bold; padding: 0.75rem 1.5rem; border-radius: 0.25rem; transition: all 0.2s; font-family: 'Oswald', sans-serif; cursor: pointer; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .btn-nav:hover { transform: translateY(-2px); background-color: #ffe033; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        .btn-save { background-color: var(--steel-blue); color: white; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.25rem; transition: all 0.3s; font-family: 'Oswald', sans-serif; cursor: pointer; border: 1px solid #718096; font-size: 0.9rem; }
+        .btn-save:hover { background-color: #2d3748; border-color: var(--safety-yellow); }
+        .card { background-color: #2d3748; border-left: 4px solid var(--safety-yellow); padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 1rem; }
+        .card-danger { border-left-color: var(--accent-red); }
+        .card-info { border-left-color: #4299e1; }
+        .card-success { border-left-color: var(--accent-green); }
+        .hazard-stripe { background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px); height: 8px; width: 100%; }
+        .progress-bar { height: 6px; background: var(--safety-yellow); width: 0%; transition: width 0.3s; position: fixed; bottom: 0; left: 0; z-index: 50; }
+        .img-box { height: 350px; overflow: hidden; border-radius: 0.5rem; border: 2px solid var(--steel-blue); background: #000; display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; }
+        .img-box img { width: 100%; height: 100%; object-fit: contain; }
+        .quiz-btn { width: 100%; text-align: left; padding: 12px; margin-bottom: 8px; background-color: var(--steel-blue); border-radius: 0.25rem; transition: background-color 0.2s; font-size: 0.95rem; }
+        .quiz-btn:hover { background-color: #718096; }
+        .correct { background-color: var(--accent-green) !important; color: white;}
+        .incorrect { background-color: var(--accent-red) !important; color: white;}
+        .formula-box { background-color: #000; border: 1px solid #4a5568; padding: 1rem; font-family: 'Courier New', Courier, monospace; color: var(--accent-green); text-align: center; font-size: 1.5rem; border-radius: 0.5rem; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button onclick="saveAndExit()" class="btn-save"><i class="fas fa-save mr-2"></i> Save & Exit</button>
+    </div>
+
+    <div class="fixed bottom-8 right-8 z-50 flex gap-4">
+        <button onclick="prevSlide()" class="btn-nav"><i class="fas fa-chevron-left"></i> PREV</button>
+        <button onclick="nextSlide()" class="btn-nav">NEXT <i class="fas fa-chevron-right"></i></button>
+    </div>
+    
+    <div class="fixed bottom-8 left-8 z-50 text-gray-400 brand-font text-xl"><span id="page-indicator">1</span> / <span id="total-pages">10</span></div>
+    <div class="progress-bar" id="progress"></div>
+
+    <div class="slide active centered" id="slide-1">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="text-yellow-400 text-xl mb-4 tracking-widest brand-font">Phase 2 Electrical Instrumentation</div>
+            <h1 class="text-6xl font-bold mb-6 leading-tight">Unit 2: Digital & Liquid Manometers</h1>
+            <div class="w-32 h-2 bg-yellow-400 mx-auto mb-8"></div>
+            <p class="text-2xl text-gray-300 font-light">Construction, Operation, Safety & Maintenance</p>
+            <div id="resume-prompt" class="hidden mt-12 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left shadow-lg">
+                <p class="text-lg mb-4 text-white"><i class="fas fa-history text-green-400 mr-2"></i> Resume previous session?</p>
+                <div class="flex gap-4">
+                    <button onclick="resumeSession()" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded font-bold transition text-white">Resume</button>
+                    <button onclick="clearSession()" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded transition text-white">Start Over</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-10">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-5xl text-yellow-400 mb-8">Unit Complete</h2>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600 text-lg text-left">
+                <p class="mb-4">You have reviewed:</p>
+                <ul class="space-y-3 text-gray-300">
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Types:</strong> U-Tube, Single Limb, Inclined, Digital.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Operation:</strong> Balancing liquid columns (P=ρgh).</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Technique:</strong> Reading meniscus, zeroing, levelling.</li>
+                    <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Safety:</strong> Mercury hazards, over-pressure, PPE.</li>
+                </ul>
+            </div>
+            <div class="mt-8">
+                <button onclick="saveAndExit()" class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded text-xl font-bold transition">Complete & Exit</button>
+                <button onclick="goToSlide(1)" class="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded text-xl font-bold transition ml-4">Restart</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION FOR UNIT 2
+        const UNIT_ID = 'm3_u2'; // Matches Pressure Hub Config
+        const HUB_PAGE = 'Pressure_Hub.html';
+        const TOTAL_SLIDES = 10;
+
+        let currentSlide = 1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem(UNIT_ID + '_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+            }
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.getElementById('progress').style.width = ((currentSlide / TOTAL_SLIDES) * 100) + '%';
+        }
+
+        function nextSlide() { if(currentSlide < TOTAL_SLIDES) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+        function goToSlide(n) { currentSlide = n; updateUI(); }
+
+        function saveAndExit() {
+            localStorage.setItem(UNIT_ID + '_slide', currentSlide);
+            if(currentSlide === TOTAL_SLIDES) {
+                localStorage.setItem(UNIT_ID, 'completed');
+            }
+            window.location.href = HUB_PAGE;
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem(UNIT_ID + '_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem(UNIT_ID + '_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => { b.classList.remove('correct', 'incorrect'); b.style.opacity = '0.5'; });
+            btn.style.opacity = '1';
+            if(isCorrect) { btn.classList.add('correct'); btn.innerHTML += ' <i class="fas fa-check float-right"></i>'; } 
+            else { btn.classList.add('incorrect'); btn.innerHTML += ' <i class="fas fa-times float-right"></i>'; }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+        updateUI();
+    </script>
+</body>
+</html>

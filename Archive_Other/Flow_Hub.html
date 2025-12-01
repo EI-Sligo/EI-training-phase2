@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flow Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500&display=swap');
+        :root { --safety-yellow: #FFD700; --industrial-grey: #1a202c; --card-bg: #2d3748; --success-green: #48bb78; --progress-blue: #4299e1; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--industrial-grey); color: white; min-height: 100vh; display: flex; flex-direction: column; }
+        h1, h2, .brand-font { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+        .hazard-stripe { background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px); height: 10px; width: 100%; position: fixed; top: 0; z-index: 50; }
+        
+        .module-card { background-color: var(--card-bg); border: 1px solid #4a5568; border-radius: 0.5rem; position: relative; display: flex; flex-direction: column; cursor: grab; transition: transform 0.2s, box-shadow 0.2s; }
+        .module-card:hover { transform: translateY(-5px); border-color: var(--safety-yellow); }
+        
+        .module-card.completed { border-color: var(--success-green); }
+        .module-card.completed::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background-color: var(--success-green); }
+        
+        .module-card.in-progress { border-color: var(--progress-blue); }
+        .module-card.in-progress::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background-color: var(--progress-blue); }
+
+        .btn-launch { background-color: var(--safety-yellow); color: black; font-weight: bold; padding: 0.5rem; border-radius: 0.25rem; text-transform: uppercase; font-family: 'Oswald', sans-serif; text-align: center; margin-top: auto; display: block; }
+        .btn-launch:hover { background-color: #e6c200; }
+        .btn-launch.completed-btn { background-color: var(--success-green); color: white; }
+        .btn-launch.resume-btn { background-color: var(--progress-blue); color: white; }
+
+        .unit-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #4a5568; color: #cbd5e0; }
+        .badge-progress { background-color: var(--progress-blue); color: white; }
+        
+        .toggle-container { margin-top: 10px; font-size: 0.8rem; color: #a0aec0; display: flex; align-items: center; justify-content: center;}
+        .toggle-checkbox { margin-right: 8px; accent-color: var(--success-green); cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="hazard-stripe"></div>
+    <header class="pt-16 pb-8 px-4 text-center">
+        <div class="max-w-4xl mx-auto">
+            <a href="Main_Hub.html" class="inline-block mb-4 text-gray-400 hover:text-yellow-400 transition"><i class="fas fa-arrow-left mr-2"></i> Back to Main Hub</a>
+            <p class="text-yellow-400 tracking-[0.2em] text-sm mb-2 brand-font">Module 4</p>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Flow Hub</h1>
+            <p class="text-gray-400">6 Units</p>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div id="module-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            </div>
+    </main>
+<footer class="py-6 text-center text-gray-600 text-xs border-t border-gray-800 mt-8">
+    <p class="mb-2">&copy; MSLETB 2025</p>
+    <button onclick="resetModuleProgress()" class="text-red-500 hover:text-red-400 underline font-bold transition">
+        <i class="fas fa-trash-alt mr-1"></i> Reset Module Progress
+    </button>
+</footer>
+    <script>
+        // CONFIGURATION FOR MODULE UNITS
+       const unitsConfig = [
+    { id: 'm4_u1', title: "Introduction to Flow", desc: "Laminar vs Turbulent, Reynolds number.", file: "M4_Unit1.html" },
+    { id: 'm4_u2', title: "Orifice Plates", desc: "Construction, taps, and beta ratio.", file: "M4_Unit2.html" },
+    { id: 'm4_u3', title: "DP Flow Measurement", desc: "Square root extraction and integration.", file: "M4_Unit3.html" },
+    { id: 'm4_u4', title: "Turbine/PD Meters", desc: "Mechanical flow measurement.", file: "M4_Unit4.html" },
+    { id: 'm4_u5', title: "Variable Area Meter", desc: "Rotameters and float physics.", file: "M4_Unit5.html" },
+    { id: 'm4_u6', title: "Vortex Flowmeter", desc: "Vortex shedding and frequency.", file: "M4_Unit6.html" }
+];
+
+        const grid = document.getElementById('module-grid');
+
+        // Render Cards
+        unitsConfig.forEach((unit, index) => {
+            const card = document.createElement('div');
+            card.className = 'module-card p-6';
+            card.id = `card-${unit.id}`;
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <span class="unit-badge" id="badge-${unit.id}">UNIT ${index + 1}</span>
+                    <i class="fas fa-check-circle text-green-500 hidden icon-completed text-xl"></i>
+                    <i class="fas fa-spinner text-blue-400 hidden icon-progress text-xl animate-spin-slow"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-white leading-tight">${unit.title}</h3>
+                <p class="text-gray-400 text-xs mb-4 flex-grow">${unit.desc}</p>
+                <a href="${unit.file}" class="btn-launch" id="btn-${unit.id}">Start Unit</a>
+                <label class="toggle-container"><input type="checkbox" class="toggle-checkbox" onchange="toggleComplete('${unit.id}')" id="check-${unit.id}"> Mark Complete</label>
+            `;
+            grid.appendChild(card);
+        });
+
+        // Initialize State
+        document.addEventListener('DOMContentLoaded', () => {
+            unitsConfig.forEach(unit => {
+                const card = document.getElementById(`card-${unit.id}`);
+                const btn = document.getElementById(`btn-${unit.id}`);
+                const badge = document.getElementById(`badge-${unit.id}`);
+                const check = document.getElementById(`check-${unit.id}`);
+                
+                const isComplete = localStorage.getItem(unit.id) === 'completed';
+                const savedSlide = localStorage.getItem(unit.id + '_slide');
+
+                if (isComplete) {
+                    card.classList.add('completed');
+                    card.querySelector('.icon-completed').classList.remove('hidden');
+                    btn.classList.add('completed-btn');
+                    btn.innerHTML = 'Review <i class="fas fa-sync ml-1"></i>';
+                    check.checked = true;
+                } else if (savedSlide && parseInt(savedSlide) > 1) {
+                    card.classList.add('in-progress');
+                    card.querySelector('.icon-progress').classList.remove('hidden');
+                    btn.classList.add('resume-btn');
+                    btn.innerHTML = `Resume (S${savedSlide}) <i class="fas fa-play ml-1"></i>`;
+                    badge.classList.add('badge-progress');
+                    badge.innerText = "IN PROGRESS";
+                }
+            });
+            new Sortable(grid, { animation: 150, ghostClass: 'opacity-50' });
+        });
+
+        function toggleComplete(id) {
+            const chk = document.getElementById(`check-${id}`);
+            if (chk.checked) {
+                localStorage.setItem(id, 'completed');
+            } else {
+                localStorage.removeItem(id);
+            }
+            location.reload();
+        }
+		function resetModuleProgress() {
+    if(confirm("Reset progress for this module?")) {
+        // 'unitsConfig' is the array name used in the Electricity Hub file I gave you
+        unitsConfig.forEach(unit => {
+            localStorage.removeItem(unit.id);
+            localStorage.removeItem(unit.id + '_slide');
+        });
+        location.reload();
+    }
+}
+    </script>
+</body>
+</html>
