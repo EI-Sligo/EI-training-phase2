@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport meta tag is CRITICAL for mobile responsiveness -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Unit 1: Basic Engineering Skills</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500&display=swap');
+
+        /* --- UNIVERSAL RESPONSIVE LAYOUT --- */
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --card-bg: #2d3748;
+            --steel-blue: #4a5568;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: white;
+            overflow: hidden; /* Prevent double scrollbars, we scroll .content-area */
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Force full screen height */
+            margin: 0;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* Hazard Stripe */
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px; width: 100%; position: fixed; top: 0; left: 0; z-index: 50;
+        }
+
+        /* --- SCROLLABLE CONTENT AREA --- */
+        .content-area {
+            flex-grow: 1;          /* Takes up all available space */
+            overflow-y: auto;      /* Allows scrolling inside this box */
+            padding-bottom: 100px; /* Space at bottom so text isn't hidden behind footer */
+            padding-top: 20px;     /* Space for hazard stripe */
+            -webkit-overflow-scrolling: touch; /* Smooth scroll on mobile */
+            width: 100%;
+        }
+
+        /* --- SLIDES --- */
+        .slide {
+            display: none;
+            padding: 2rem 1rem;
+            flex-direction: column;
+            align-items: center; /* Center content */
+            width: 100%;
+            max-width: 1200px;   /* Limit width on big screens */
+            margin: 0 auto;
+            min-height: 100%;
+        }
+        .slide.active { display: flex; }
+
+        /* --- FIXED FOOTER NAVIGATION --- */
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #2d3748;
+            border-top: 1px solid #4a5568;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 4px;
+            flex: 1;               /* Grow on mobile */
+            max-width: 150px;      /* Limit on desktop */
+            text-align: center;
+            user-select: none;
+            cursor: pointer;
+        }
+        .btn-nav:active { background-color: #e6c200; transform: translateY(2px); }
+
+        .progress-text {
+            color: #a0aec0;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        /* --- TOP RIGHT EXIT BUTTON --- */
+        .btn-exit {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: #4a5568;
+            color: white;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: 1px solid #718096;
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-exit:hover { background-color: #2d3748; border-color: var(--safety-yellow); }
+
+        /* --- COMPONENT STYLES --- */
+        .card {
+            background-color: #2d3748;
+            border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        /* --- IMAGES & LIGHTBOX --- */
+        .img-box {
+            width: 100%;
+            max-width: 600px;      /* Prevents massive images on PC */
+            height: 300px;
+            background: #000;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1rem auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-in; /* Shows pointer */
+        }
+        .img-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* Lightbox Overlay */
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000; /* On top of everything */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #lightbox img {
+            max-width: 95%;
+            max-height: 80%;
+            border: 2px solid var(--safety-yellow);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        #lightbox-close {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+
+        .quiz-btn {
+            width: 100%; text-align: left; padding: 12px; margin-bottom: 8px;
+            background-color: #4a5568; border-radius: 0.25rem; transition: background 0.2s;
+        }
+        .quiz-btn:hover { background-color: #718096; }
+        .correct { background-color: #48bb78 !important; }
+        .incorrect { background-color: #e53e3e !important; }
+
+        input[type="number"] {
+            background-color: #4a5568; border: 1px solid #718096;
+            color: white; padding: 0.5rem; border-radius: 0.25rem; width: 100px;
+        }
+
+        /* Mobile Tweaks */
+        @media (max-width: 640px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            .img-box { height: 200px; }
+            .card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP BAR -->
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+    <button onclick="saveAndExit()" class="btn-exit"><i class="fas fa-save mr-2"></i> Exit</button>
+
+    <!-- 2. LIGHTBOX (Hidden by default) -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Zoomed Image">
+        <button id="lightbox-close">Close View</button>
+    </div>
+
+    <!-- 3. SCROLLABLE CONTENT -->
+    <div class="content-area">
+
+        <!-- SLIDE 1: Title -->
+        <div class="slide active" id="slide-1">
+            <div class="max-w-5xl mx-auto text-center">
+                <p class="text-yellow-400 text-xl mb-2 tracking-widest brand-font">Phase 2 Electrical Instrumentation</p>
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">Unit 1: Basic Engineering Skills</h1>
+                <div class="w-24 h-2 bg-yellow-400 mx-auto mb-8"></div>
+                <p class="text-xl text-gray-300">Metrology, Benchwork, Drilling & Piping</p>
+                
+                <div id="resume-prompt" class="hidden mt-8 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left">
+                    <p class="text-lg mb-4 text-white"><i class="fas fa-history text-green-400 mr-2"></i> Resume previous session?</p>
+                    <div class="flex gap-4">
+                        <button onclick="resumeSession()" class="px-4 py-2 bg-green-600 rounded font-bold text-white">Resume</button>
+                        <button onclick="clearSession()" class="px-4 py-2 bg-gray-600 rounded text-white">Start Over</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Learning Outcomes -->
+        <div class="slide" id="slide-2">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6 border-b border-gray-700 pb-2">Learning Outcomes</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-yellow-400 mb-1">Tools & Safety</h3>
+                        <p class="text-gray-300 text-sm">Apply proper safety, care, and handling techniques to measuring instruments and engineering tools.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-yellow-400 mb-1">Measurement</h3>
+                        <p class="text-gray-300 text-sm">Use instruments to measure lengths, diameters, and bores of given components.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-yellow-400 mb-1">Drilling & Tapping</h3>
+                        <p class="text-gray-300 text-sm">Select drill sizes for tapping. Drill, tap, and countersink holes.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-lg font-bold text-yellow-400 mb-1">Piping</h3>
+                        <p class="text-gray-300 text-sm">Bend/cut copper and stainless steel pipe. Identify fittings. Correctly make common pipe joints.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Metrology Instruments -->
+        <div class="slide" id="slide-3">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">Key Measuring Instruments</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-800 p-4 rounded text-center border border-gray-700">
+                        <h4 class="font-bold text-yellow-400">Steel Rule</h4>
+                        <p class="text-xs text-gray-400">Accuracy: 0.5mm</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded text-center border border-gray-700">
+                        <h4 class="font-bold text-yellow-400">Vernier Caliper</h4>
+                        <p class="text-xs text-gray-400">Accuracy: 0.02mm</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded text-center border border-gray-700">
+                        <h4 class="font-bold text-yellow-400">Micrometer</h4>
+                        <p class="text-xs text-gray-400">Accuracy: 0.01mm</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded text-center border border-gray-700">
+                        <h4 class="font-bold text-yellow-400">Combination Square</h4>
+                        <p class="text-xs text-gray-400">90° / 45° Angles</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded text-center border border-gray-700">
+                        <h4 class="font-bold text-yellow-400">Dividers</h4>
+                        <p class="text-xs text-gray-400">Transfer Dimensions</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded text-center border border-gray-700">
+                        <h4 class="font-bold text-yellow-400">Protractor</h4>
+                        <p class="text-xs text-gray-400">Measure Angles</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Care of Instruments -->
+        <div class="slide" id="slide-4">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Care of Instruments</h2>
+                    <div class="card">
+                        <h3 class="font-bold mb-2">Best Practices</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-300 space-y-2">
+                            <li><strong>Cleanliness:</strong> Wipe away oil, dirt, and sweat after use.</li>
+                            <li><strong>Storage:</strong> Keep in a dry environment (case) to prevent rust.</li>
+                            <li><strong>Protection:</strong> Protect sharp points and measuring edges. Don't stack them.</li>
+                            <li><strong>Lubrication:</strong> Light oiling of moving parts (e.g., micrometer spindle).</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('https://alsaeedkingtony.com/wp-content/uploads/2023/12/77141-430x301.png')">
+                    <img src="https://alsaeedkingtony.com/wp-content/uploads/2023/12/77141-430x301.png" alt="Care of Instruments">
+                </div>
+                <p class="text-center text-gray-500 text-xs w-full col-span-full">(Tap image to zoom)</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Micrometer Usage -->
+        <div class="slide" id="slide-5">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">The Micrometer</h2>
+                    <ul class="list-disc pl-5 mb-4 text-gray-300 text-sm">
+                        <li><strong>Ratchet Stop:</strong> Always use the ratchet to apply consistent pressure. Never overtighten using the thimble.</li>
+                        <li><strong>Zero Check:</strong> Before measuring, close the anvil and spindle to check it reads 0.00.</li>
+                        <li><strong>Accuracy:</strong> Typically 0.01mm.</li>
+                    </ul>
+                    <div class="bg-blue-900/30 p-4 rounded border border-blue-500 text-sm">
+                        <strong>Reading:</strong> Sleeve (Main Scale) + Thimble (0.01 Scale).
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Mahr_Micromar_40A_0%E2%80%9325_mm_Micrometer.jpg/330px-Mahr_Micromar_40A_0%E2%80%9325_mm_Micrometer.jpg')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Mahr_Micromar_40A_0%E2%80%9325_mm_Micrometer.jpg/330px-Mahr_Micromar_40A_0%E2%80%9325_mm_Micrometer.jpg" alt="The Micrometer">
+                </div>
+                 <p class="text-center text-gray-500 text-xs w-full col-span-full">(Tap image to zoom)</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: KC1 Metrology -->
+        <div class="slide" id="slide-6">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6 text-center">Knowledge Check 1</h2>
+                <div class="bg-gray-800 p-6 rounded mb-4 border border-gray-700">
+                    <p class="font-bold mb-3">1. Why use the ratchet stop on a micrometer?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">To lock the spindle</button>
+                    <button onclick="check(this, true)" class="quiz-btn">To ensure consistent pressure</button>
+                    <button onclick="check(this, false)" class="quiz-btn">To zero the instrument</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4 border border-gray-700">
+                    <p class="font-bold mb-3">2. Which instrument measures Internal Diameter (ID)?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Micrometer</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Vernier Caliper</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Steel Rule</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Marking Out -->
+        <div class="slide" id="slide-7">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">Marking Out</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-2 text-blue-400">Datum Line/Point</h3>
+                        <p class="text-gray-300 text-sm">A fixed reference edge or point from which all measurements are taken to ensure accuracy.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-2 text-green-400">Marking Blue</h3>
+                        <p class="text-gray-300 text-sm">A dye applied to metal to make scribed lines visible. <strong>Safety:</strong> Use sparingly, avoid skin contact.</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded col-span-1 md:col-span-2">
+                        <h3 class="text-xl font-bold mb-2">Key Tools</h3>
+                        <ul class="list-disc pl-5 text-gray-300 text-sm">
+                            <li><strong>Scriber:</strong> Fine steel point for marking lines.</li>
+                            <li><strong>Centre Punch:</strong> Indents metal to seat a drill bit.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Hacksaw Technique -->
+        <div class="slide" id="slide-8">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">The Hacksaw</h2>
+                    <div class="card">
+                        <h3 class="font-bold mb-2">Blade Orientation</h3>
+                        <p class="text-gray-300 text-sm mb-4">Teeth must point <strong>FORWARD</strong> (away from handle). Cutting action is on the push stroke.</p>
+                        <h3 class="font-bold mb-2">Technique</h3>
+                        <ul class="list-disc pl-5 text-gray-300 text-sm">
+                            <li>Use full length of blade.</li>
+                            <li>Stance: Feet apart, balanced.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('https://media.screwfix.ie/is/image/ae235/593YM_A6?$fxSharpen$=&wid=257&hei=257&dpr=on')">
+                    <img src="https://media.screwfix.ie/is/image/ae235/593YM_A6?$fxSharpen$=&wid=257&hei=257&dpr=on" alt="The Hacksaw">
+                </div>
+                 <p class="text-center text-gray-500 text-xs w-full col-span-full">(Tap image to zoom)</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: Filing -->
+        <div class="slide" id="slide-9">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">Filing</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-2">Types & Action</h3>
+                        <ul class="text-sm text-gray-300 space-y-2">
+                            <li><strong>Single Cut:</strong> For finishing/sharpening.</li>
+                            <li><strong>Double Cut:</strong> For rapid material removal.</li>
+                            <li><strong>Cross Filing:</strong> Diagonal strokes for removal.</li>
+                            <li><strong>Draw Filing:</strong> Sideways motion for fine finish.</li>
+                        </ul>
+                    </div>
+                    <div class="card border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold mb-2 text-red-400">Safety & Care</h3>
+                        <ul class="text-sm text-gray-300 space-y-2">
+                            <li><strong>Pinning:</strong> Clogged teeth scratch work. Clean with File Card.</li>
+                            <li><strong>Handle:</strong> Never use a file without a handle (Injury Risk).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: Drilling Machines -->
+        <div class="slide" id="slide-10">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Drilling Machines</h2>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-800 rounded border border-gray-600">
+                            <h3 class="font-bold text-yellow-400">Work Holding</h3>
+                            <p class="text-sm text-gray-300">Workpiece security is critical. Use a machine vice or clamps. Never hold work by hand.</p>
+                        </div>
+                        <div class="p-4 bg-gray-800 rounded border border-gray-600">
+                            <h3 class="font-bold text-yellow-400">Bit Holding</h3>
+                            <ul class="list-disc pl-5 text-sm text-gray-300">
+                                <li><strong>Jacobs Chuck:</strong> Straight shank drills. Remove key!</li>
+                                <li><strong>Morse Taper:</strong> Tapered shank drills. Use a Drift.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('https://www.3erp.com/wp-content/uploads/2024/08/1-min-6-300x169.jpg')">
+                    <img src="https://www.3erp.com/wp-content/uploads/2024/08/1-min-6-300x169.jpg" alt="Drilling Machines">
+                </div>
+                 <p class="text-center text-gray-500 text-xs w-full col-span-full">(Tap image to zoom)</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: Drill Speed Calculator -->
+        <div class="slide" id="slide-11">
+            <div class="max-w-4xl mx-auto w-full text-center">
+                <h2 class="text-3xl text-yellow-400 mb-6">Drill Speed Calculator</h2>
+                <div class="bg-gray-800 p-6 rounded border border-blue-500 inline-block w-full max-w-md">
+                    <p class="text-lg mb-4 font-mono">RPM = (1000 x V) / (π x D)</p>
+                    
+                    <div class="flex flex-col gap-4 mb-4">
+                        <div class="flex justify-between items-center">
+                            <label class="text-sm text-gray-400">Cutting Speed (V):</label>
+                            <input type="number" id="cutSpeed" value="30" class="text-black p-1 rounded w-20 text-center">
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <label class="text-sm text-gray-400">Diameter (D in mm):</label>
+                            <input type="number" id="drillDia" placeholder="e.g. 10" class="text-black p-1 rounded w-20 text-center">
+                        </div>
+                    </div>
+                    
+                    <button onclick="calcRPM()" class="bg-green-600 hover:bg-green-500 text-white w-full py-2 rounded font-bold mb-4">Calculate</button>
+                    
+                    <div class="bg-black p-3 rounded">
+                        <p class="text-xs text-gray-500">Result:</p>
+                        <p class="text-3xl text-yellow-400 font-bold" id="rpmResult">0 RPM</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-sm text-gray-400">Rule: Small Drill = High Speed. Large Drill = Slow Speed.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: Drilling Process -->
+        <div class="slide" id="slide-12">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">The Drilling Process</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="card">
+                        <h3 class="font-bold text-green-400">1. Centering</h3>
+                        <p class="text-sm text-gray-300">Always Centre Punch the mark to prevent drill wander.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-green-400">2. Pilot Hole</h3>
+                        <p class="text-sm text-gray-300">For large holes (>10mm), drill a small pilot hole first to reduce pressure.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-green-400">3. Coolant</h3>
+                        <p class="text-sm text-gray-300">Use soluble oil/coolant to reduce heat and preserve the bit.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-green-400">4. Swarf</h3>
+                        <p class="text-sm text-gray-300">Use a brush to clear swarf. <strong>NEVER</strong> use bare hands.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: KC2 Drilling -->
+        <div class="slide" id="slide-13">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6 text-center">Knowledge Check 2</h2>
+                <div class="bg-gray-800 p-6 rounded mb-4 border border-gray-700">
+                    <p class="font-bold mb-3">1. What is used to remove a Morse Taper drill bit?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Chuck Key</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Drift</button>
+                    <button onclick="check(this, false)" class="quiz-btn">File</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4 border border-gray-700">
+                    <p class="font-bold mb-3">2. Why use a pilot hole?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">To measure depth</button>
+                    <button onclick="check(this, true)" class="quiz-btn">To guide larger drills/reduce pressure</button>
+                    <button onclick="check(this, false)" class="quiz-btn">To tap a thread</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: Tapping (Threads) -->
+        <div class="slide" id="slide-14">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Tapping (Internal Threads)</h2>
+                    <p class="text-gray-300 mb-4">Creating a thread inside a hole to accept a bolt.</p>
+                    <div class="card border-blue-500">
+                        <h3 class="font-bold mb-2 text-blue-400">The 3 Tap Set</h3>
+                        <ol class="list-decimal pl-5 text-sm text-gray-300 space-y-1">
+                            <li><strong>Taper:</strong> Starts the thread.</li>
+                            <li><strong>Intermediate:</strong> Deepens it.</li>
+                            <li><strong>Plug:</strong> Finishes to bottom of blind hole.</li>
+                        </ol>
+                        <p class="text-xs text-gray-400 mt-2">Lubricant: Trefolex or Oil.</p>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('https://autoschrauber.de/wp-content/uploads/2022/11/innengewinde_schneiden.jpg')">
+                    <img src="https://autoschrauber.de/wp-content/uploads/2022/11/innengewinde_schneiden.jpg" alt="Tapping">
+                </div>
+                 <p class="text-center text-gray-500 text-xs w-full col-span-full">(Tap image to zoom)</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: Tapping Drill Size -->
+        <div class="slide" id="slide-15">
+            <div class="max-w-4xl mx-auto w-full text-center">
+                <h2 class="text-3xl text-yellow-400 mb-6">Tap Drill Calculator</h2>
+                <div class="bg-gray-800 p-8 rounded border border-green-500 inline-block w-full max-w-md">
+                    <p class="text-lg font-bold mb-4">Drill Size = Thread Size - Pitch</p>
+                    
+                    <div class="flex flex-col gap-4 mb-4">
+                        <input type="number" id="threadSize" placeholder="Thread (e.g. 10)" class="text-black p-2 rounded text-center">
+                        <input type="number" id="pitchSize" placeholder="Pitch (e.g. 1.5)" class="text-black p-2 rounded text-center">
+                    </div>
+                    
+                    <button onclick="calcTap()" class="bg-green-600 hover:bg-green-500 text-white w-full py-2 rounded font-bold mb-4">Calculate</button>
+                    
+                    <div class="bg-black p-3 rounded">
+                        <p class="text-xs text-gray-500">Required Drill Bit:</p>
+                        <p class="text-3xl text-yellow-400 font-bold" id="tapResult">? mm</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 16: Fixings -->
+        <div class="slide" id="slide-16">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">Fixings & Fasteners</h2>
+                <div class="grid grid-cols-3 gap-4 text-sm text-center">
+                    <div class="card">
+                        <h4 class="font-bold text-blue-400 mb-2">Bolts</h4>
+                        <p>Hex Head, Machine Screws.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-bold text-green-400 mb-2">Washers</h4>
+                        <p>Flat (Load), Spring (Vibration), Shakeproof.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-bold text-red-400 mb-2">Others</h4>
+                        <p>Pop Rivets, Spring Clips, Split Pins.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 17: Safety Factors -->
+        <div class="slide" id="slide-17">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">Workshop Safety</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold mb-2 text-red-400">Personal Safety</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li>Safety glasses must be worn.</li>
+                            <li>No gloves at rotating machines.</li>
+                            <li>Correct stance for sawing/filing.</li>
+                        </ul>
+                    </div>
+                    <div class="card border-l-4 border-yellow-500">
+                        <h3 class="text-xl font-bold mb-2 text-yellow-400">Workpiece Safety</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li>Clamp work securely.</li>
+                            <li>Use a brush for swarf (Razor sharp).</li>
+                            <li>Remove chuck key immediately.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 18: Piping Materials -->
+        <div class="slide" id="slide-18">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Piping Materials</h2>
+                    <div class="space-y-4">
+                        <div class="bg-gray-800 p-4 rounded border-l-4 border-orange-500">
+                            <h3 class="font-bold text-orange-400">Copper</h3>
+                            <p class="text-sm text-gray-300">Easy to bend. Low pressure air/water. Limitation: Reacts with Acetylene/Ammonia.</p>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded border-l-4 border-gray-500">
+                            <h3 class="font-bold text-gray-300">Stainless Steel</h3>
+                            <p class="text-sm text-gray-300">High tensile strength. High pressure/corrosive fluids. <strong>Work-hardens</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('https://media.licdn.com/dms/image/v2/C5612AQFRS5DHT09_Kw/article-cover_image-shrink_600_2000/article-cover_image-shrink_600_2000/0/1630392922518?e=2147483647&v=beta&t=FTUGJobHQcXv_Ls2a9xDyxSukN1fgowOjoUYJVYItL4')">
+                    <img src="https://media.licdn.com/dms/image/v2/C5612AQFRS5DHT09_Kw/article-cover_image-shrink_600_2000/article-cover_image-shrink_600_2000/0/1630392922518?e=2147483647&v=beta&t=FTUGJobHQcXv_Ls2a9xDyxSukN1fgowOjoUYJVYItL4" alt="Piping">
+                </div>
+                 <p class="text-center text-gray-500 text-xs w-full col-span-full">(Tap image to zoom)</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 19: Pipe Sizes -->
+        <div class="slide" id="slide-19">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-3xl text-yellow-400 mb-6">Pipe Specifications</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="card">
+                        <p class="text-2xl font-bold">1/4"</p>
+                        <p class="text-xs text-gray-400">6.35mm</p>
+                    </div>
+                    <div class="card">
+                        <p class="text-2xl font-bold">3/8"</p>
+                        <p class="text-xs text-gray-400">9.52mm</p>
+                    </div>
+                    <div class="card">
+                        <p class="text-2xl font-bold">1/2"</p>
+                        <p class="text-xs text-gray-400">12.7mm</p>
+                    </div>
+                </div>
+                <p class="mt-6 text-gray-400 text-sm">Wall Thickness determines the pressure rating.</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 20: Cutting Pipe -->
+        <div class="slide" id="slide-20">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Cutting Pipe</h2>
+                    <p class="text-gray-300 mb-4">Wheel Cutters create a clean cut but leave a large internal burr.</p>
+                    <div class="bg-red-900/30 p-4 rounded border border-red-500">
+                        <p class="font-bold text-white mb-2">CRITICAL:</p>
+                        <p class="text-sm text-gray-300">You MUST <strong>Ream (Deburr)</strong> the pipe after cutting. Burrs cause turbulence and damage O-rings.</p>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('https://m.media-amazon.com/images/I/711PeS+1yxL._AC_UF894,1000_QL80_.jpg')">
+                    <img src="https://m.media-amazon.com/images/I/711PeS+1yxL._AC_UF894,1000_QL80_.jpg" alt="Pipe Cutter">
+                </div>
+                 <p class="text-center text-gray-500 text-xs w-full col-span-full">(Tap image to zoom)</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 21: Bending Pipe -->
+        <div class="slide" id="slide-21">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">Bending Pipe</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="font-bold mb-2">Hand Bender</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-300">
+                            <li>Match pipe size to former groove.</li>
+                            <li>Calculate <strong>Setback</strong> for accuracy.</li>
+                            <li>Bends: 45°, 90°, Offsets.</li>
+                        </ul>
+                    </div>
+                    <div class="card border-l-4 border-yellow-500">
+                        <h3 class="font-bold mb-2 text-yellow-400">Precautions</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-300">
+                            <li>Do not flatten/kink the tube.</li>
+                            <li><strong>Stainless Steel:</strong> Bend right the first time. Re-bending hardens it.</li>
+                            <li>Watch for springback.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 22: Fittings -->
+        <div class="slide" id="slide-22">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">Fittings</h2>
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="bg-gray-800 p-6 rounded">
+                        <h3 class="text-xl font-bold mb-2 text-orange-400">Compression</h3>
+                        <p class="text-sm text-gray-300">Single Ferrule / Olive. Common in plumbing.</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded border border-green-500">
+                        <h3 class="text-xl font-bold mb-2 text-green-400">Twin Ferrule</h3>
+                        <p class="text-sm text-gray-300">Industry Standard (Swagelok/Parker).</p>
+                        <ul class="list-disc pl-5 mt-2 text-xs text-gray-400">
+                            <li>Front Ferrule: Seals.</li>
+                            <li>Back Ferrule: Grips.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 23: Twin Ferrule Assembly -->
+        <div class="slide" id="slide-23">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Assembly Procedure</h2>
+                    <ol class="list-decimal pl-5 space-y-3 text-gray-300 text-sm">
+                        <li>Cut tube square and <strong>REAM</strong>.</li>
+                        <li>Insert into fitting until it bottoms out.</li>
+                        <li>Tighten nut <strong>Finger Tight</strong>.</li>
+                        <li>Mark the nut (6 o'clock).</li>
+                        <li>Tighten <strong>1 and 1/4 turns</strong> (to 9 o'clock).</li>
+                    </ol>
+                    <p class="mt-4 text-xs text-red-400"><strong>Danger:</strong> Never mix ferrule brands.</p>
+                </div>
+                <div class="img-box" onclick="openLightbox('https://www.swagelok.com/-/media/distributor-media/h-k/kansascity/prod_photos/fittings/a-caution-on-intermix-and-interchange/fittings-2.ashx?h=301&w=400&hash=58DDD7722BD0E9CED2ECF54007F8E8C4')">
+                    <img src="https://www.swagelok.com/-/media/distributor-media/h-k/kansascity/prod_photos/fittings/a-caution-on-intermix-and-interchange/fittings-2.ashx?h=301&w=400&hash=58DDD7722BD0E9CED2ECF54007F8E8C4" alt="Twin Ferrule">
+                </div>
+                 <p class="text-center text-gray-500 text-xs w-full col-span-full">(Tap image to zoom)</p>
+            </div>
+        </div>
+
+        <!-- SLIDE 24: Inspection -->
+        <div class="slide" id="slide-24">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-3xl text-yellow-400 mb-6">Inspection & Testing</h2>
+                <div class="grid grid-cols-3 gap-6 text-left">
+                    <div class="card">
+                        <h4 class="font-bold text-blue-400">Gap Gauge</h4>
+                        <p class="text-xs text-gray-300 mt-2">Checks tightness (Go/No-Go).</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-bold text-green-400">Thread Tape</h4>
+                        <p class="text-xs text-gray-300 mt-2">PTFE tape for threads. Apply clockwise.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-bold text-red-400">Pressure Test</h4>
+                        <p class="text-xs text-gray-300 mt-2">1.5x working pressure. Check leaks.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 25: KC3 Piping -->
+        <div class="slide" id="slide-25">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6 text-center">Knowledge Check 3</h2>
+                <div class="bg-gray-800 p-6 rounded mb-4 border border-gray-700">
+                    <p class="font-bold mb-3">1. What happens to Stainless Steel when bent?</p>
+                    <button onclick="check(this, true)" class="quiz-btn">It work-hardens</button>
+                    <button onclick="check(this, false)" class="quiz-btn">It softens</button>
+                    <button onclick="check(this, false)" class="quiz-btn">It rusts</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4 border border-gray-700">
+                    <p class="font-bold mb-3">2. Why ream pipe after cutting?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">To polish it</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Remove internal burrs/turbulence</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4 border border-gray-700">
+                    <p class="font-bold mb-3">3. Turns to tighten Twin Ferrule?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">1/2 Turn</button>
+                    <button onclick="check(this, true)" class="quiz-btn">1 and 1/4 Turns</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 26: Summary -->
+        <div class="slide" id="slide-26">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl text-yellow-400 mb-8">Unit Complete</h2>
+                <div class="text-left bg-gray-800 p-8 rounded border border-gray-600 text-lg">
+                    <ul class="space-y-3 text-gray-300">
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Metrology:</strong> Micrometers, Verniers.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Drilling:</strong> RPM, Tapping, Safety.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Piping:</strong> Bending, Cutting, Twin Ferrule Assembly.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Safety:</strong> Observed all PPE and Rules.</li>
+                    </ul>
+                </div>
+                <div class="mt-8">
+                    <button onclick="saveAndExit()" class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded text-xl font-bold transition">Finish & Exit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 27: Buffer -->
+        
+
+    </div>
+
+    <!-- 4. FIXED FOOTER -->
+    <div class="nav-footer">
+        <button onclick="prevSlide()" class="btn-nav">PREV</button>
+        <span class="progress-text"><span id="page-indicator">1</span> / 27</span>
+        <button onclick="nextSlide()" class="btn-nav">NEXT</button>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const UNIT_ID = 'unit1'; 
+        const HUB_PAGE = 'Installation_Techniques_Hub.html'; 
+        const TOTAL_SLIDES = 27;
+
+        let currentSlide = 1;
+
+        // --- LIGHTBOX LOGIC ---
+        function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+        function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
+
+        // --- STANDARD LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem(UNIT_ID + '_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+                document.getElementById('saved-slide-num').innerText = savedSlide;
+            }
+            updateUI();
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const slide = document.getElementById(`slide-${currentSlide}`);
+            if(slide) slide.classList.add('active');
+            
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.querySelector('.content-area').scrollTop = 0;
+        }
+
+        function nextSlide() { if(currentSlide < TOTAL_SLIDES) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+        function goToSlide(n) { currentSlide = n; updateUI(); }
+
+        function saveAndExit() {
+            localStorage.setItem(UNIT_ID + '_slide', currentSlide);
+            if(currentSlide === TOTAL_SLIDES) {
+                localStorage.setItem(UNIT_ID, 'completed');
+            }
+            window.location.href = HUB_PAGE;
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem(UNIT_ID + '_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem(UNIT_ID + '_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => { b.classList.remove('correct', 'incorrect'); b.style.opacity = '0.5'; });
+            btn.style.opacity = '1';
+            if(isCorrect) btn.classList.add('correct'); else btn.classList.add('incorrect');
+        }
+
+        function calcRPM() {
+            const v = parseFloat(document.getElementById('cutSpeed').value);
+            const d = parseFloat(document.getElementById('drillDia').value);
+            if(d) {
+                const rpm = (1000 * v) / (Math.PI * d);
+                document.getElementById('rpmResult').innerText = Math.round(rpm) + " RPM";
+            }
+        }
+
+        function calcTap() {
+            const thread = parseFloat(document.getElementById('threadSize').value);
+            const pitch = parseFloat(document.getElementById('pitchSize').value);
+            if(thread && pitch) {
+                document.getElementById('tapResult').innerText = (thread - pitch).toFixed(1) + " mm";
+            }
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+    </script>
+</body>
+</html>

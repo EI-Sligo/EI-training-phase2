@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 1: Introduction to Electricity & Ohm's Law</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --steel-blue: #4a5568;
+            --accent-red: #e53e3e;
+            --accent-green: #48bb78;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--industrial-grey);
+            color: white;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .slide {
+            display: none;
+            height: 100vh;
+            padding: 2rem 4rem;
+            flex-direction: column;
+            justify-content: flex-start;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+            overflow-y: auto;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .slide.centered {
+            justify-content: center;
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .btn-nav:hover {
+            transform: translateY(-2px);
+            background-color: #ffe033;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+
+        .btn-save {
+            background-color: var(--steel-blue);
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s;
+            font-family: 'Oswald', sans-serif;
+            cursor: pointer;
+            border: 1px solid #718096;
+            font-size: 0.9rem;
+        }
+
+        .btn-save:hover {
+            background-color: #2d3748;
+            border-color: var(--safety-yellow);
+        }
+
+        .card {
+            background-color: #2d3748;
+            border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+        }
+
+        .card-danger { border-left-color: var(--accent-red); }
+        .card-info { border-left-color: #4299e1; }
+        .card-success { border-left-color: var(--accent-green); }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 8px;
+            width: 100%;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--safety-yellow);
+            width: 0%;
+            transition: width 0.3s;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        .img-box {
+            height: 350px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 2px solid var(--steel-blue);
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+        th, td { border: 1px solid #4a5568; padding: 0.75rem; text-align: left; }
+        th { background-color: #2d3748; color: var(--safety-yellow); }
+        tr:nth-child(even) { background-color: #232d3f; }
+
+        .formula-box {
+            background-color: #000;
+            border: 1px solid #4a5568;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--accent-green);
+            text-align: center;
+            font-size: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #1a202c; }
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+
+    <div class="fixed top-4 right-4 z-50 flex gap-2">
+        <button onclick="saveAndExit()" class="btn-save">
+            <i class="fas fa-save mr-2"></i> Save & Exit
+        </button>
+    </div>
+
+    <div class="fixed bottom-8 right-8 z-50 flex gap-4">
+        <button onclick="prevSlide()" class="btn-nav"><i class="fas fa-chevron-left"></i> PREV</button>
+        <button onclick="nextSlide()" class="btn-nav">NEXT <i class="fas fa-chevron-right"></i></button>
+    </div>
+    
+    <div class="fixed bottom-8 left-8 z-50 text-gray-400 brand-font text-xl">
+        <span id="page-indicator">1</span> / <span id="total-pages">63</span>
+    </div>
+
+    <div class="progress-bar" id="progress"></div>
+
+    <div class="slide active centered" id="slide-1">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="text-yellow-400 text-xl mb-4 tracking-widest brand-font">MSLETB - Electrical Instrumentation Phase 2</div>
+            <h1 class="text-6xl font-bold mb-6 leading-tight">Introduction to Electricity & Ohm's Law</h1>
+            <div class="w-32 h-2 bg-yellow-400 mx-auto mb-8"></div>
+            <p class="text-2xl text-gray-300 font-light">Module 1: Foundational Concepts</p>
+            <p class="text-xl text-gray-400 mt-2">Session 1.1: Introduction & Atomic Theory</p>
+
+            <div id="resume-prompt" class="hidden mt-12 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left shadow-lg">
+                <p class="text-lg mb-4 text-white"><i class="fas fa-history text-green-400 mr-2"></i> Resume previous session?</p>
+                <div class="flex gap-4">
+                    <button onclick="resumeSession()" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded font-bold transition text-white">Resume</button>
+                    <button onclick="clearSession()" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded transition text-white">Start Over</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-2">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Why Are We Here?</h2>
+            <div class="bg-gray-800 p-8 rounded border-l-4 border-blue-500 mb-6">
+                <h3 class="text-xl font-bold mb-4">The Importance of Electricity</h3>
+                <p class="text-gray-300 text-lg mb-4"><strong>Question:</strong> What is the one thing almost every trade on a modern job site depends on?</p>
+                <p class="text-white text-2xl font-bold mb-4">Answer: Electricity.</p>
+                <p class="text-gray-400 mb-4">From power tools for carpenters to control systems for plumbers and HVAC technicians, a solid understanding of electricity is essential for safety and success in any skilled trade.</p>
+            </div>
+            <p class="text-yellow-400 font-bold text-center text-xl">Course Goal: To build your knowledge from the ground up, starting with the very basics, so you can work safely and competently.</p>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-3">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">The Building Block: The Atom</h2>
+                <p class="text-gray-300 mb-4 text-lg">Everything in the universe—from the copper in a wire to the air we breathe—is made up of atoms.</p>
+                <div class="bg-gray-800 p-6 rounded border border-white">
+                    <p class="text-white italic">"An atom is the smallest particle of an element that still has the properties of that element."</p>
+                </div>
+                <p class="text-gray-400 mt-4">To understand electricity, we must first understand the structure of the atom.</p>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of atom structure model]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-4">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Inside the Atom</h2>
+            <p class="text-xl text-gray-300 mb-8">An atom has two main parts: the Nucleus and the orbiting Electrons.</p>
+            
+            <div class="grid grid-cols-2 gap-8">
+                <div class="card card-danger">
+                    <h3 class="text-2xl font-bold mb-4">The Nucleus (Center)</h3>
+                    <ul class="list-disc pl-5 space-y-3 text-lg text-gray-300">
+                        <li><strong>Protons:</strong> Have a POSITIVE (+) electrical charge.</li>
+                        <li><strong>Neutrons:</strong> Have NO charge (they are neutral).</li>
+                    </ul>
+                </div>
+                <div class="card card-info">
+                    <h3 class="text-2xl font-bold mb-4">Orbiting Particles</h3>
+                    <ul class="list-disc pl-5 space-y-3 text-lg text-gray-300">
+                        <li><strong>Electrons:</strong> Have a NEGATIVE (-) electrical charge.</li>
+                        <li>They are very small and orbit the nucleus at high speed.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-5">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-green-400 mb-6">Atomic Neutrality</h2>
+            <div class="bg-gray-800 p-10 rounded border-2 border-green-500 inline-block">
+                <h3 class="text-3xl font-bold text-white mb-4">Key Point</h3>
+                <p class="text-xl text-gray-300 mb-4">In a normal atom, the number of electrons (-) is equal to the number of protons (+).</p>
+                <hr class="border-gray-600 my-4">
+                <p class="text-2xl text-yellow-400 font-bold">This makes the atom electrically neutral.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-6">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">The Most Important Part: Electron Shells</h2>
+                <ul class="list-disc pl-5 space-y-4 text-gray-300 text-lg">
+                    <li>Electrons don't just orbit randomly; they stay in specific paths called <strong>shells</strong> or <strong>energy levels</strong>.</li>
+                    <li>Think of it like planets orbiting the sun in our solar system.</li>
+                    <li>Each shell can only hold a certain number of electrons.</li>
+                    <li>The shell furthest from the nucleus is the most important one for electricity.</li>
+                </ul>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of electron shells diagram]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-7">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">The Valence Shell - Key to Electricity</h2>
+                <div class="bg-gray-800 p-6 rounded border border-yellow-500 mb-4">
+                    <p class="text-lg text-gray-300 mb-2">The outermost shell of an atom is called the <strong>VALENCE SHELL</strong>.</p>
+                    <p class="text-gray-300">The electrons in this shell are called <strong>valence electrons</strong>.</p>
+                </div>
+                <p class="text-xl text-white font-bold mb-4">The flow of electricity is the flow of electrons.</p>
+                <p class="text-gray-400 text-sm">How easily an electron can leave its valence shell determines if a material will be a good conductor of electricity or not.</p>
+                <p class="text-gray-400 text-sm mt-2">If a valence electron can be easily "knocked out" of its shell, it can move freely and contribute to electric current.</p>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of neon atom electron shell structure]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-8">
+        <div class="max-w-4xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Activity Time</h2>
+            <p class="text-xl text-gray-300 mb-8"><strong>Goal:</strong> To see the difference between an atom of a conductor and an atom of an insulator.</p>
+            
+            <div class="bg-gray-800 p-6 rounded inline-block text-left mb-8">
+                <p class="font-bold text-white mb-2">You will need:</p>
+                <ul class="list-disc pl-5 text-gray-300">
+                    <li>Pen / Pencil</li>
+                    <li>Paper</li>
+                </ul>
+            </div>
+            
+            <p class="text-lg text-gray-300">We will draw two different atoms:</p>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div class="bg-blue-900/50 p-4 rounded border border-blue-500">
+                    <h3 class="font-bold">Copper</h3>
+                    <p>A great electrical conductor.</p>
+                </div>
+                <div class="bg-red-900/50 p-4 rounded border border-red-500">
+                    <h3 class="font-bold">Neon</h3>
+                    <p>A gas used in signs (Insulator).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-9">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Activity: Draw a Conductor (Copper)</h2>
+                <div class="bg-gray-800 p-6 rounded border border-blue-500">
+                    <h3 class="text-2xl font-bold mb-2">Copper Atom (Cu)</h3>
+                    <ul class="list-disc pl-5 text-gray-300 mb-4">
+                        <li>Protons: 29 (+)</li>
+                        <li>Electrons: 29 (-)</li>
+                    </ul>
+                    <h4 class="font-bold text-white mb-2">Shell Structure:</h4>
+                    <ul class="list-decimal pl-5 text-gray-300">
+                        <li>1st Shell: 2 electrons</li>
+                        <li>2nd Shell: 8 electrons</li>
+                        <li>3rd Shell: 18 electrons</li>
+                        <li class="text-yellow-400 font-bold">Valence Shell (4th): 1 electron</li>
+                    </ul>
+                </div>
+                <p class="text-green-400 mt-4 font-bold">Draw this atom. Notice how lonely that one valence electron is.</p>
+                <p class="text-gray-400">It's not held tightly and can easily be pushed out!</p>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of electron shells diagram]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-10">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Activity: Draw an Insulator (Neon)</h2>
+                <div class="bg-gray-800 p-6 rounded border border-red-500">
+                    <h3 class="text-2xl font-bold mb-2">Neon Atom (Ne)</h3>
+                    <ul class="list-disc pl-5 text-gray-300 mb-4">
+                        <li>Protons: 10 (+)</li>
+                        <li>Electrons: 10 (-)</li>
+                    </ul>
+                    <h4 class="font-bold text-white mb-2">Shell Structure:</h4>
+                    <ul class="list-decimal pl-5 text-gray-300">
+                        <li>1st Shell: 2 electrons</li>
+                        <li class="text-red-400 font-bold">Valence Shell (2nd): 8 electrons</li>
+                    </ul>
+                </div>
+                <p class="text-white mt-4">Draw this atom. The valence shell is full and stable (8 is a happy number for shells).</p>
+                <p class="text-gray-400">These electrons are held very tightly and are not free to move.</p>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of neon atom electron shell structure]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-11">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Activity Debrief: What did we see?</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-green-500">
+                    <h3 class="text-2xl font-bold mb-4">Copper (Conductor)</h3>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                        <li>Has only <strong>1 valence electron</strong>.</li>
+                        <li>This electron is far from the nucleus and weakly held.</li>
+                        <li>It requires very little energy to make it leave the atom and become a "free electron."</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-red-500">
+                    <h3 class="text-2xl font-bold mb-4">Neon (Insulator)</h3>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                        <li>Has <strong>8 valence electrons</strong>.</li>
+                        <li>The valence shell is full and stable.</li>
+                        <li>It requires a huge amount of energy to remove an electron.</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="text-center mt-8 text-xl font-bold text-white bg-blue-900 p-4 rounded">Conclusion: The number of valence electrons is the key difference between conductors and insulators.</p>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-12">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-2">Session 1.2: Charge, Force, and Materials</h2>
+            <h3 class="text-3xl text-white mb-6">What is Electric Charge?</h3>
+            
+            <p class="text-gray-300 mb-6 text-lg">Charge is a fundamental physical property of matter that causes it to experience a force when placed in an electromagnetic field.</p>
+            <p class="text-gray-400 mb-6">It's the property that we assigned to Protons (+) and Electrons (-).</p>
+            
+            <div class="bg-gray-800 p-8 rounded border border-blue-500 inline-block">
+                <h3 class="text-2xl font-bold text-blue-400 mb-2">The Coulomb (C)</h3>
+                <p class="text-gray-300 mb-4">We measure electric charge in a unit called the Coulomb.</p>
+                <div class="text-left bg-black p-4 rounded text-sm text-gray-300">
+                    <p><strong>Analogy:</strong> Just like we measure distance in 'metres' or mass in 'kilograms'... we measure charge in 'Coulombs'.</p>
+                    <p class="mt-2 text-yellow-400">1 Coulomb = the charge of approx. 6.24 quintillion electrons! (6.24 x 10<sup>18</sup>)</p>
+                </div>
+            </div>
+            
+            <p class="mt-8 text-gray-300 text-sm">Think of it like this: instead of counting individual grains of sand, we count bags of sand. The Coulomb is like a "bag" that contains a massive number of electron charges.</p>
+            <p class="mt-2 text-white font-bold">1 Ampere (A) = 1 Coulomb of charge flowing past a point in 1 second.</p>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-13">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-6">The Law of Charges: Coulomb's Law</h2>
+                <p class="text-gray-300 mb-6">The fundamental rule of how charges interact is simple and universal:</p>
+                
+                <div class="space-y-4">
+                    <div class="card card-success">
+                        <h3 class="font-bold text-green-400">Opposite Charges ATTRACT</h3>
+                        <p class="text-sm text-gray-300">A positive charge and a negative charge will pull toward each other.</p>
+                    </div>
+                    <div class="card card-danger">
+                        <h3 class="font-bold text-red-400">Like Charges REPEL</h3>
+                        <p class="text-sm text-gray-300">Two positive charges will push away from each other.</p>
+                        <p class="text-sm text-gray-300">Two negative charges will also push away from each other.</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-white font-bold">This law of attraction and repulsion is the force that makes electrons move.</p>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Attract and Repel Diagram]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-14">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-green-400 mb-6">Materials: Conductors</h2>
+            <div class="bg-gray-800 p-8 rounded border-l-8 border-green-500">
+                <p class="text-xl text-white mb-4"><strong>Definition:</strong> Materials that allow electric charge (electrons) to flow through them easily.</p>
+                <hr class="border-gray-600 my-4">
+                <h3 class="text-lg font-bold text-gray-300 mb-2">Atomic Structure</h3>
+                <p class="text-gray-400 mb-4">They have 1 to 3 valence electrons that are loosely held by the nucleus. These "free electrons" can be easily pushed from one atom to the next.</p>
+                <h3 class="text-lg font-bold text-gray-300 mb-2">Examples</h3>
+                <ul class="list-disc pl-5 text-gray-400">
+                    <li><strong>Best:</strong> Silver, Copper, Gold, Aluminum</li>
+                    <li><strong>Good:</strong> Brass, Steel, most other metals.</li>
+                </ul>
+                <p class="mt-4 text-sm text-yellow-400">Copper is the most common conductor used in electrical wiring because it offers a great balance of conductivity and cost.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-15">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-red-400 mb-6">Materials: Insulators</h2>
+            <div class="bg-gray-800 p-8 rounded border-l-8 border-red-500">
+                <p class="text-xl text-white mb-4"><strong>Definition:</strong> Materials that resist or prevent the flow of electric charge.</p>
+                <hr class="border-gray-600 my-4">
+                <h3 class="text-lg font-bold text-gray-300 mb-2">Atomic Structure</h3>
+                <p class="text-gray-400 mb-4">They have 5 to 8 valence electrons. Their valence shell is full or nearly full. Electrons are held very tightly to the nucleus and are not free to move.</p>
+                <h3 class="text-lg font-bold text-gray-300 mb-2">Examples</h3>
+                <div class="grid grid-cols-3 gap-4 text-gray-400 text-sm">
+                    <div>Rubber</div>
+                    <div>Plastic</div>
+                    <div>Glass</div>
+                    <div>Porcelain</div>
+                    <div>Dry Wood</div>
+                    <div>Air</div>
+                </div>
+                <p class="mt-4 text-sm text-white">Insulators are essential for safety, used to cover wires and protect us from electric shock.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-16">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-blue-400 mb-6">Materials: Semiconductors</h2>
+            <div class="bg-gray-800 p-8 rounded border-l-8 border-blue-500">
+                <p class="text-xl text-white mb-4"><strong>Definition:</strong> Materials that are neither good conductors nor good insulators.</p>
+                <hr class="border-gray-600 my-4">
+                <h3 class="text-lg font-bold text-gray-300 mb-2">Atomic Structure</h3>
+                <p class="text-gray-400 mb-4">They have exactly 4 valence electrons. Their properties can be precisely controlled by adding impurities (a process called "doping").</p>
+                <h3 class="text-lg font-bold text-gray-300 mb-2">Examples</h3>
+                <ul class="list-disc pl-5 text-gray-400">
+                    <li>Silicon (Si)</li>
+                    <li>Germanium (Ge)</li>
+                </ul>
+                <p class="mt-4 text-sm text-white">Semiconductors are the foundation of all modern electronics: diodes, transistors, computer chips, solar panels, etc.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-17">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Summary Table</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-center text-gray-300 border-collapse">
+                    <thead>
+                        <tr class="bg-gray-700 text-yellow-400 text-lg">
+                            <th class="p-3 border border-gray-600">Property</th>
+                            <th class="p-3 border border-gray-600">Conductors</th>
+                            <th class="p-3 border border-gray-600">Insulators</th>
+                            <th class="p-3 border border-gray-600">Semiconductors</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="p-3 border border-gray-600 font-bold text-white">Valence Electrons</td>
+                            <td class="p-3 border border-gray-600">1-3 (Few)</td>
+                            <td class="p-3 border border-gray-600">5-8 (Many)</td>
+                            <td class="p-3 border border-gray-600">4 (Exactly)</td>
+                        </tr>
+                        <tr class="bg-gray-800">
+                            <td class="p-3 border border-gray-600 font-bold text-white">Electron Mobility</td>
+                            <td class="p-3 border border-gray-600">Very High (Free)</td>
+                            <td class="p-3 border border-gray-600">Very Low (Bound)</td>
+                            <td class="p-3 border border-gray-600">Can be controlled</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-gray-600 font-bold text-white">Resistance to Flow</td>
+                            <td class="p-3 border border-gray-600 text-green-400">Very Low</td>
+                            <td class="p-3 border border-gray-600 text-red-400">Very High</td>
+                            <td class="p-3 border border-gray-600">Moderate</td>
+                        </tr>
+                        <tr class="bg-gray-800">
+                            <td class="p-3 border border-gray-600 font-bold text-white">Purpose</td>
+                            <td class="p-3 border border-gray-600">To allow current flow</td>
+                            <td class="p-3 border border-gray-600">To block current flow</td>
+                            <td class="p-3 border border-gray-600">To control current flow</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 border border-gray-600 font-bold text-white">Example</td>
+                            <td class="p-3 border border-gray-600">Copper Wire</td>
+                            <td class="p-3 border border-gray-600">Rubber Sheath</td>
+                            <td class="p-3 border border-gray-600">Computer Chip</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-18">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Module 1 Recap</h2>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                <ul class="list-disc pl-5 space-y-4 text-xl text-gray-300">
+                    <li>All matter is made of atoms.</li>
+                    <li>Atoms contain protons (+), neutrons, and electrons (-).</li>
+                    <li>The valence shell is the key to electrical properties.</li>
+                    <li>Conductors have few valence electrons and let current flow easily.</li>
+                    <li>Insulators have many valence electrons and block current flow.</li>
+                    <li>Semiconductors have 4 valence electrons and are used to control flow.</li>
+                    <li>The law of charges states that opposites attract and likes repel.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-19">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h1 class="text-6xl font-bold mb-6 text-yellow-400">Module 2: Electrical Quantities</h1>
+            <p class="text-2xl text-gray-300 mb-8">Session 2.1: EMF and Electric Current</p>
+            
+            <div class="bg-gray-800 p-8 rounded inline-block text-left">
+                <h3 class="text-2xl font-bold text-white mb-4">The "Big Three" of Electricity</h3>
+                <p class="text-gray-300 mb-4">To understand any electrical circuit, you must know these three key quantities:</p>
+                <ul class="list-disc pl-5 space-y-2 text-lg">
+                    <li class="text-yellow-400"><strong>Voltage (V):</strong> The electrical pressure or "push."</li>
+                    <li class="text-green-400"><strong>Current (I):</strong> The rate of electrical flow.</li>
+                    <li class="text-red-400"><strong>Resistance (R):</strong> The opposition to flow.</li>
+                </ul>
+                <p class="mt-6 text-sm text-gray-400">We will use a simple water pipe analogy to understand how they relate to each other.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-20">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">Electromotive Force (EMF) / Voltage</h2>
+                <p class="text-gray-300 mb-2"><strong>Definition:</strong> EMF, commonly called Voltage, is the potential difference or pressure that causes electrons to move in a circuit.</p>
+                <p class="text-gray-300 mb-2">It's the "push" that forces electrons away from a negative point and towards a positive one.</p>
+                <p class="text-white font-bold mb-2">Unit of Measurement: The Volt (V).</p>
+                <p class="text-sm text-gray-400 mb-4">Without voltage, there is no push, and therefore no current can flow.</p>
+                
+                <div class="bg-blue-900/30 p-4 rounded border border-blue-500">
+                    <h4 class="font-bold text-blue-300">Water Analogy: Voltage is Pressure</h4>
+                    <p class="text-sm text-gray-300 mt-2"><strong>High Voltage:</strong> Like a full water tower. Lots of pressure, potential to push a large amount of water.</p>
+                    <p class="text-sm text-gray-300 mt-1"><strong>Low Voltage:</strong> Like a nearly empty water tower. Little pressure, only pushes a small amount of water.</p>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Water Tower Voltage Analogy]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-21">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Where Does Voltage Come From?</h2>
+            <p class="text-gray-300 mb-6 text-center">Voltage is created by converting other forms of energy into electrical energy.</p>
+            
+            <div class="card card-info">
+                <h3 class="text-2xl font-bold mb-3">1. Chemical Source: Cells & Batteries</h3>
+                <p class="text-gray-300 mb-2"><strong>How it works:</strong> A chemical reaction inside the cell creates a buildup of electrons at the negative terminal (-) and a shortage at the positive terminal (+), resulting in a voltage.</p>
+                <ul class="list-disc pl-5 text-gray-300">
+                    <li><strong>Primary Cells:</strong> Non-rechargeable (e.g., standard AA, AAA batteries).</li>
+                    <li><strong>Secondary Cells:</strong> Rechargeable (e.g., car batteries, phone batteries).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-22">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="card card-danger">
+                <h3 class="text-xl font-bold mb-3">2. Magnetic Source: Generators</h3>
+                <p class="text-gray-300 text-sm mb-2"><strong>How it works:</strong> Based on the principle of electromagnetic induction.</p>
+                <p class="text-gray-300 text-sm mb-2">When a wire is moved through a magnetic field, a voltage is "induced" in the wire.</p>
+                <p class="text-white text-xs font-bold">This is how almost all the world's electricity is generated.</p>
+            </div>
+            
+            <div class="card card-success">
+                <h3 class="text-xl font-bold mb-3">3. Other Sources</h3>
+                <p class="text-gray-300 text-sm mb-2"><strong>Thermal (Thermocouples):</strong> Heating a junction of two different metals creates a small voltage. Used for temperature sensors.</p>
+                <p class="text-gray-300 text-sm"><strong>Light (Photovoltaic Cells):</strong> Light striking a semiconductor material (like silicon) knocks electrons free, creating a voltage. This is how solar panels work.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-23">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-green-400 mb-4">Electric Current</h2>
+                <p class="text-gray-300 mb-2"><strong>Definition:</strong> Electric Current is the rate of flow of electric charge through a conductor.</p>
+                <p class="text-gray-300 mb-2">It's the measure of how many electrons are moving past a point in a certain amount of time.</p>
+                <p class="text-white font-bold mb-2">Unit: The Ampere (A), often called "Amps".</p>
+                <p class="text-white font-bold mb-2">Symbol: I (from French 'intensité').</p>
+                <p class="text-sm text-gray-400">Current is what does the work (lights a lamp, turns a motor).</p>
+            </div>
+            <div class="bg-blue-900/30 p-6 rounded border border-blue-500">
+                <h3 class="font-bold text-blue-300 mb-3">Water Analogy: Current is Flow Rate</h3>
+                <p class="text-sm text-gray-300 mb-3"><strong>High Current:</strong> Like a wide pipe with lots of water flowing through it (many litres per second).</p>
+                <p class="text-sm text-gray-300"><strong>Low Current:</strong> Like a narrow pipe with only a trickle of water flowing through it.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-24">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Relationship: Current & Charge</h2>
+            <p class="text-gray-300 mb-4">Remember: Charge (Q) is in Coulombs, Current (I) is in Amps.</p>
+            <p class="text-xl text-white mb-8">1 Ampere is defined as 1 Coulomb of charge flowing past a point in 1 second.</p>
+            
+            <div class="formula-box text-6xl mb-8">
+                Q = I x t
+            </div>
+            
+            <div class="grid grid-cols-3 gap-4 text-lg text-gray-300">
+                <div>Q = Charge (Coulombs)</div>
+                <div>I = Current (Amps)</div>
+                <div>t = Time (Seconds)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-25">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Calculation Practice</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-gray-800 p-6 rounded">
+                    <h3 class="font-bold text-white mb-2">Question 1</h3>
+                    <p class="text-sm text-gray-300 mb-2">A current of 5 Amps flows through a lamp for 2 minutes. What quantity of electricity (charge) is transferred?</p>
+                    <div class="bg-black p-3 rounded font-mono text-green-400 text-sm">
+                        Step 1: 2 mins x 60 = 120 sec<br>
+                        Step 2: Q = I x t<br>
+                        Step 3: Q = 5 A x 120 s<br>
+                        Answer: Q = 600 C
+                    </div>
+                </div>
+                
+                <div class="bg-gray-800 p-6 rounded">
+                    <h3 class="font-bold text-white mb-2">Question 2</h3>
+                    <p class="text-sm text-gray-300 mb-2">If 540 Coulombs of charge passes through a point in 2 minutes, what is the current?</p>
+                    <div class="bg-black p-3 rounded font-mono text-yellow-400 text-sm">
+                        Step 1: I = Q / t<br>
+                        Step 2: 2 x 60 = 120 s<br>
+                        Step 3: I = 540 C / 120 s<br>
+                        Answer: I = 4.5 A
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-26">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h1 class="text-5xl font-bold text-yellow-400 mb-4">Module 2: Electrical Quantities</h1>
+            <p class="text-2xl text-gray-300 mb-8">Session 2.2: Resistance & Current Flow</p>
+            
+            <h3 class="text-3xl text-white mb-4">Conventional vs. Electron Flow</h3>
+            <div class="bg-gray-800 p-8 rounded inline-block text-left">
+                <p class="text-gray-300 mb-2"><strong>The Big Question:</strong> Which way does electricity actually flow?</p>
+                <p class="text-gray-400 mb-4">This is confusing, but simple once you know the history.</p>
+                <p class="text-white font-bold mb-2">There are two "correct" answers:</p>
+                <ul class="list-disc pl-5 text-gray-300 mb-4">
+                    <li><strong>Electron Flow:</strong> What is physically happening.</li>
+                    <li><strong>Conventional Flow:</strong> The standard used for calculations.</li>
+                </ul>
+                <p class="text-red-400 font-bold text-center">You MUST understand both.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-27">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-blue-400 mb-4">Electron Flow Theory (Physical Reality)</h2>
+                <ul class="list-disc pl-5 space-y-3 text-gray-300 text-lg">
+                    <li>Electrons are negatively charged.</li>
+                    <li>The negative terminal has a surplus of electrons.</li>
+                    <li>The positive terminal has a shortage.</li>
+                    <li>Opposites attract, likes repel. Electrons are repelled from negative and attracted to positive.</li>
+                </ul>
+                <div class="mt-6 bg-blue-900/30 p-4 rounded border border-blue-500 text-center font-bold text-white">
+                    Electrons flow from NEGATIVE (-) to POSITIVE (+)
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Electron Flow Diagram]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-28">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-red-400 mb-4">Conventional Flow Theory (Industry Standard)</h2>
+                <ul class="list-disc pl-5 space-y-3 text-gray-300 text-lg">
+                    <li>Early scientists (like Ben Franklin) assumed electricity was a positive fluid flowing from high (+) to low (-) potential.</li>
+                    <li>This convention was established <strong>before</strong> the electron was discovered.</li>
+                    <li>It was too late to change all the books!</li>
+                </ul>
+                <div class="mt-6 bg-red-900/30 p-4 rounded border border-red-500 text-center font-bold text-white">
+                    We assume current flows from POSITIVE (+) to NEGATIVE (-)
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Conventional Flow Diagram]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-29">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Seeing Both Flows</h2>
+            <div class="bg-gray-800 p-10 rounded border border-white">
+                <h3 class="text-2xl font-bold mb-6">Rule of Thumb:</h3>
+                <div class="grid grid-cols-2 gap-8 text-left">
+                    <div>
+                        <p class="text-blue-400 font-bold mb-2">Thinking Physics?</p>
+                        <p class="text-gray-300">Think <strong>Electron Flow</strong>. (What is actually happening).</p>
+                    </div>
+                    <div>
+                        <p class="text-red-400 font-bold mb-2">Reading Schematics / Calculating?</p>
+                        <p class="text-gray-300">You MUST use <strong>Conventional Flow</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-30">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-red-400 mb-4">Resistance</h2>
+                <p class="text-gray-300 mb-2"><strong>Definition:</strong> Opposition to the flow of electric current.</p>
+                <p class="text-gray-300 mb-2">A measure of how difficult it is for electrons to pass through.</p>
+                <p class="text-white mb-2">Resistance converts electrical energy into <strong>heat</strong>.</p>
+                <p class="text-white font-bold mb-2">Unit: The Ohm.</p>
+                <p class="text-white font-bold">Symbol: Omega (Ω).</p>
+            </div>
+            <div class="bg-gray-800 p-6 rounded border border-red-500">
+                <h3 class="font-bold text-red-300 mb-3">Water Analogy: Obstruction</h3>
+                <p class="text-sm text-gray-300 mb-3"><strong>Low Resistance:</strong> Wide, clear pipe. Water flows easily.</p>
+                <p class="text-sm text-gray-300"><strong>High Resistance:</strong> Narrow, rusty pipe. Difficult to push water through.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-31">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Four Factors Affecting Resistance</h2>
+            <p class="text-gray-300 mb-8 text-xl">The resistance of a conductor depends on four key factors:</p>
+            
+            <div class="grid grid-cols-2 gap-6">
+                <div class="bg-gray-800 p-4 rounded text-xl font-bold text-white">1. Length</div>
+                <div class="bg-gray-800 p-4 rounded text-xl font-bold text-white">2. Cross-Sectional Area</div>
+                <div class="bg-gray-800 p-4 rounded text-xl font-bold text-white">3. Material Type</div>
+                <div class="bg-gray-800 p-4 rounded text-xl font-bold text-white">4. Temperature</div>
+            </div>
+            <p class="mt-8 text-gray-400">Let's look at each one.</p>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-32">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Factor 1: Length</h2>
+            <div class="card">
+                <h3 class="text-2xl font-bold mb-4">The longer a conductor, the higher its resistance.</h3>
+                <p class="text-gray-300 mb-4"><strong>Analogy:</strong> It's harder to push water through a very long hose than a short one due to friction.</p>
+                <p class="text-gray-300 mb-4"><strong>Reason:</strong> Electrons must travel past more atoms; each collision causes opposition.</p>
+                <div class="bg-black p-4 rounded text-center text-yellow-400 font-bold">
+                    Resistance is directly proportional to length. <br>(Double length = Double resistance)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-33">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Factor 2: Cross-Sectional Area (CSA)</h2>
+            <div class="card card-success">
+                <h3 class="text-2xl font-bold mb-4">The thicker a conductor, the lower its resistance.</h3>
+                <p class="text-gray-300 mb-4"><strong>Analogy:</strong> A wide fire hose has less resistance than a narrow garden hose.</p>
+                <p class="text-gray-300 mb-4"><strong>Reason:</strong> A thicker wire provides more paths for electrons to flow.</p>
+                <div class="bg-black p-4 rounded text-center text-green-400 font-bold">
+                    Resistance is inversely proportional to area. <br>(Double area = Halve resistance)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-34">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Factor 3: Material Type (Resistivity)</h2>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                <p class="text-gray-300 mb-4 text-lg">Every material has its own natural opposition called <strong>resistivity</strong>.</p>
+                <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                    <li>Conductors have very low resistivity.</li>
+                    <li>Insulators have very high resistivity.</li>
+                </ul>
+                <div class="mt-6 grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-blue-900/50 p-4 rounded">
+                        <h4 class="font-bold">Copper</h4>
+                        <p>1.68 x 10<sup>-8</sup> Ω·m (Very Low)</p>
+                    </div>
+                    <div class="bg-red-900/50 p-4 rounded">
+                        <h4 class="font-bold">Glass</h4>
+                        <p>10<sup>10</sup> to 10<sup>14</sup> Ω·m (Extremely High)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-35">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Factor 4: Temperature</h2>
+            <div class="card card-danger">
+                <h3 class="text-2xl font-bold mb-4">For most conductors, as temperature increases, resistance increases.</h3>
+                <p class="text-gray-300 mb-4"><strong>Reason:</strong> Heating causes atoms to vibrate more rapidly.</p>
+                <p class="text-gray-300 mb-4">This makes it harder for electrons to find a path, leading to more collisions.</p>
+                <p class="text-sm text-gray-400 mt-4 italic">Note: Semiconductors typically decrease resistance as they get hotter.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-36">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Module 2 Recap</h2>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                <ul class="list-disc pl-5 space-y-4 text-xl text-gray-300">
+                    <li><strong>Voltage (V):</strong> Pressure that pushes current. Measured in Volts.</li>
+                    <li><strong>Current (I):</strong> Rate of flow. Measured in Amps.</li>
+                    <li><strong>Resistance (R):</strong> Opposition to flow. Measured in Ohms (Ω).</li>
+                    <li><strong>Conventional Flow:</strong> (+ to -) is used for analysis.</li>
+                    <li>Resistance depends on Length, Thickness, Material, and Temperature.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-37">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h1 class="text-6xl font-bold mb-6 text-yellow-400">Module 3: Ohm's Law & Circuit Analysis</h1>
+            <p class="text-2xl text-gray-300 mb-8">Session 3.1: The Simple Circuit & Ohm's Law</p>
+            
+            <div class="bg-gray-800 p-8 rounded inline-block text-left">
+                <h3 class="text-2xl font-bold text-white mb-4">The Electric Circuit</h3>
+                <p class="text-gray-300 mb-4">A circuit is a closed loop that allows current to flow.</p>
+                <p class="text-white font-bold mb-2">Four Essential Parts:</p>
+                <ul class="list-disc pl-5 text-gray-300 text-lg">
+                    <li><strong>Source:</strong> Provides voltage (Battery).</li>
+                    <li><strong>Path:</strong> Conductors (Wires).</li>
+                    <li><strong>Load:</strong> Uses electricity (Lamp).</li>
+                    <li><strong>Control:</strong> Opens/Closes (Switch).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-38">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-6">A Simple Circuit Diagram</h2>
+                <p class="text-gray-300 text-lg">Here are the four parts working together:</p>
+                <div class="mt-4 bg-gray-800 p-4 rounded border border-blue-500">
+                    <p class="text-gray-300">When the Control (Switch) is closed, the loop is complete. Current flows from Source -> Path -> Load -> Source.</p>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Simple Circuit Diagram]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-39">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Circuit Conditions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card card-info">
+                    <h3 class="text-2xl font-bold mb-3">Open Circuit</h3>
+                    <p class="text-gray-300 mb-2">The path is broken (open switch, broken wire, blown fuse).</p>
+                    <p class="text-gray-300 mb-2">Result: <strong>No Current Flows.</strong></p>
+                    <p class="text-white font-bold">Infinite Resistance.</p>
+                </div>
+                <div class="card card-danger">
+                    <h3 class="text-2xl font-bold mb-3">Short Circuit</h3>
+                    <p class="text-gray-300 mb-2">Unintended low-resistance path bypassing the load.</p>
+                    <p class="text-gray-300 mb-2">Result: <strong>Dangerously High Current.</strong></p>
+                    <p class="text-red-400 font-bold">Fire Hazard. Wires melt.</p>
+                    <p class="text-sm text-gray-400 mt-2">Fuses protect against this.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-40">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Graphical Symbols</h2>
+            <p class="text-xl text-gray-300 mb-6">Instead of drawing pictures, electricians use standard symbols to draw schematics.</p>
+            <div class="bg-gray-800 p-8 rounded border border-white inline-block">
+                <p class="text-2xl font-bold text-white">Learning these symbols is like learning the alphabet of electricity.</p>
+            </div>
+            <p class="text-gray-400 mt-8">We will now learn the most common symbols.</p>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-41">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Common Component Symbols</h2>
+            <div class="img-box bg-white h-96">
+                
+
+[Image of Component Symbols Table]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-42">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Meter Symbols & Connection</h2>
+            <p class="text-gray-300 mb-6">Meters must be connected correctly to measure properly.</p>
+            
+            <div class="grid grid-cols-3 gap-6">
+                <div class="bg-gray-800 p-6 rounded text-center border-t-4 border-green-500">
+                    <h3 class="text-2xl font-bold text-white mb-2">Ammeter</h3>
+                    <p class="text-xl font-bold text-green-400 mb-2">--( A )--</p>
+                    <p class="text-sm text-gray-300">Measures Current.</p>
+                    <p class="text-sm text-gray-300 font-bold mt-2">Connect IN SERIES.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded text-center border-t-4 border-blue-500">
+                    <h3 class="text-2xl font-bold text-white mb-2">Voltmeter</h3>
+                    <p class="text-xl font-bold text-blue-400 mb-2">--( V )--</p>
+                    <p class="text-sm text-gray-300">Measures Voltage.</p>
+                    <p class="text-sm text-gray-300 font-bold mt-2">Connect IN PARALLEL.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded text-center border-t-4 border-red-500">
+                    <h3 class="text-2xl font-bold text-white mb-2">Ohmmeter</h3>
+                    <p class="text-xl font-bold text-red-400 mb-2">--( Ω )--</p>
+                    <p class="text-sm text-gray-300">Measures Resistance.</p>
+                    <p class="text-sm text-gray-300 font-bold mt-2">Use on DEAD CIRCUIT only.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-43">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Module 3: Session 3.2</h2>
+            <h1 class="text-6xl font-bold text-white mb-8">Ohm's Law</h1>
+            
+            <div class="bg-gray-800 p-8 rounded border border-gray-600 inline-block text-left mb-8">
+                <p class="text-xl italic text-gray-300">"The current flowing through a conductor is directly proportional to the voltage across it and inversely proportional to the resistance, provided all physical conditions remain constant."</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-8 text-lg">
+                <div class="bg-green-900/50 p-4 rounded text-green-300">
+                    Increase Voltage (Push) = Current Increases
+                </div>
+                <div class="bg-red-900/50 p-4 rounded text-red-300">
+                    Increase Resistance (Opposition) = Current Decreases
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-44">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">The Formula</h2>
+                <div class="formula-box text-4xl mb-6">V = I x R</div>
+                <ul class="text-lg text-gray-300 mb-6">
+                    <li>V = Voltage (Volts)</li>
+                    <li>I = Current (Amps)</li>
+                    <li>R = Resistance (Ohms)</li>
+                </ul>
+                <div class="bg-gray-800 p-4 rounded border border-blue-500">
+                    <p class="text-white font-bold mb-2">The Triangle Method:</p>
+                    <p class="text-sm text-gray-300">Cover V -> I x R</p>
+                    <p class="text-sm text-gray-300">Cover I -> V / R</p>
+                    <p class="text-sm text-gray-300">Cover R -> V / I</p>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Ohms Law Triangle]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-45">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Calculation Practice</h2>
+            <div class="bg-gray-800 p-8 rounded border border-white inline-block text-left w-2/3">
+                <h3 class="text-2xl font-bold mb-4">Example 1</h3>
+                <p class="text-gray-300 mb-4">A simple circuit has a 230Ω resistor connected to a power source. If a current of 5 Amps is flowing, what is the source voltage?</p>
+                
+                <div class="space-y-2 font-mono text-lg">
+                    <p class="text-blue-300">Known: R = 230Ω, I = 5A</p>
+                    <p class="text-red-300">Unknown: V</p>
+                    <p class="text-green-300">Formula: V = I x R</p>
+                    <p class="text-white">Calculation: V = 5A x 230Ω</p>
+                    <hr class="border-gray-600 my-2">
+                    <p class="text-yellow-400 font-bold text-2xl">Answer: V = 1150 Volts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-46">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Working with Large & Small Numbers</h2>
+            <p class="text-gray-300 mb-4">We use engineering prefixes to make numbers easier to write.</p>
+            <div class="bg-red-900/30 p-4 border border-red-500 text-center mb-6">
+                <strong>IMPORTANT:</strong> You must convert all values to their base units (Volts, Amps, Ohms) before doing calculations!
+            </div>
+            <div class="img-box bg-white h-80">
+                
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-47">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-6">Calculation with Prefixes</h2>
+            <div class="bg-gray-800 p-8 rounded border border-green-500 inline-block text-left w-2/3">
+                <h3 class="text-2xl font-bold mb-4">Example 2</h3>
+                <p class="text-gray-300 mb-4">A circuit has a resistance of 2 kΩ and a current of 50 mA is flowing. What is the voltage?</p>
+                
+                <div class="space-y-3 font-mono text-lg">
+                    <div class="bg-black p-3 rounded text-blue-300">
+                        <strong>Step 1: Convert</strong><br>
+                        R = 2 kΩ = 2000 Ω<br>
+                        I = 50 mA = 0.05 A
+                    </div>
+                    <p class="text-green-300">Step 2: Formula V = I x R</p>
+                    <p class="text-white">V = 0.05 A x 2000 Ω</p>
+                    <hr class="border-gray-600 my-2">
+                    <p class="text-yellow-400 font-bold text-2xl">Answer: V = 100 Volts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-48">
+        <div class="max-w-4xl mx-auto w-full text-center">
+            <h2 class="text-5xl text-yellow-400 mb-8">Worksheet Activity</h2>
+            <i class="fas fa-pencil-alt text-6xl text-white mb-8"></i>
+            <p class="text-2xl text-gray-300 mb-6">Now it's your turn to practice.</p>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600 text-left inline-block">
+                <ul class="list-disc pl-5 text-xl space-y-4 text-gray-300">
+                    <li>Please take a worksheet.</li>
+                    <li>Show your work.</li>
+                    <li>Write down the formula.</li>
+                    <li>Convert all prefixes to base units.</li>
+                    <li>Don't forget the units in your answer!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-49">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Module 3 Recap</h2>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                <ul class="list-disc pl-5 space-y-4 text-xl text-gray-300">
+                    <li>A circuit needs a Source, Path, Load, and Control.</li>
+                    <li>Open circuits have no flow; short circuits have dangerous flow.</li>
+                    <li>Graphical symbols are the language of electrical diagrams.</li>
+                    <li>Ohm's Law (V = I x R) connects voltage, current, and resistance.</li>
+                    <li>Always convert prefixes to base units before calculating.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-50">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h1 class="text-6xl font-bold mb-6 text-yellow-400">Module 4: Practical Application & Safety</h1>
+            <p class="text-2xl text-gray-300 mb-8">Session 4.1: Practical Lab & Effects of Current</p>
+            
+            <div class="bg-gray-800 p-8 rounded border border-green-500 inline-block">
+                <h3 class="text-3xl text-green-400 font-bold mb-4">Safety First!</h3>
+                <ul class="list-disc pl-5 text-left text-lg text-gray-300 space-y-2">
+                    <li>This is a low-voltage lab, but habits start now.</li>
+                    <li>Handle equipment carefully.</li>
+                    <li>Wear safety glasses.</li>
+                    <li>Keep workspace tidy.</li>
+                    <li>If unsure, ASK!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-51">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">The Digital Multimeter (DMM)</h2>
+                <p class="text-gray-300 text-lg mb-4">This is your most important tool.</p>
+                <p class="text-gray-300 mb-4">We will use it to measure Voltage (V), Current (A), and Resistance (Ω).</p>
+                <div class="bg-red-900/30 p-4 rounded border border-red-500">
+                    <p class="font-bold text-white">Crucial Rule:</p>
+                    <p class="text-gray-300">The way you connect the meter depends on what you are measuring.</p>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Digital Multimeter]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-52">
+        <div class="max-w-6xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Connecting Your Meters</h2>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-blue-500">
+                    <h3 class="text-xl font-bold mb-2">Voltage</h3>
+                    <p class="text-blue-400 font-bold mb-2">IN PARALLEL</p>
+                    <p class="text-sm text-gray-300">Connect across the component to measure pressure difference.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-green-500">
+                    <h3 class="text-xl font-bold mb-2">Current</h3>
+                    <p class="text-green-400 font-bold mb-2">IN SERIES</p>
+                    <p class="text-sm text-gray-300">Connect in line. You must break the circuit so current flows through the meter.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border-t-4 border-red-500">
+                    <h3 class="text-xl font-bold mb-2">Resistance</h3>
+                    <p class="text-red-400 font-bold mb-2">POWER OFF</p>
+                    <p class="text-sm text-gray-300">NEVER use on a live circuit. Remove component to test.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-53">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Lab: Verifying Ohm's Law</h2>
+            <p class="text-gray-300 mb-6">Goal: Prove that V = I x R.</p>
+            <div class="bg-gray-800 p-6 rounded text-left">
+                <ol class="list-decimal pl-5 space-y-3 text-lg text-gray-300">
+                    <li><strong>Measure Resistance:</strong> With power OFF, measure your resistor's ohms. Record it.</li>
+                    <li><strong>Build Circuit:</strong> Set up the power supply and resistor.</li>
+                    <li><strong>Set Voltage:</strong> Turn on and set to 5 Volts.</li>
+                    <li><strong>Measure Voltage:</strong> Connect voltmeter in parallel. Record.</li>
+                    <li><strong>Measure Current:</strong> Power OFF. Connect ammeter in series. Power ON. Record.</li>
+                    <li><strong>Calculate:</strong> R = V / I. Compare to your Step 1 measurement.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-54">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Effects of Current</h2>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="card card-danger">
+                    <h3 class="text-xl font-bold mb-2">Heating Effect</h3>
+                    <p class="text-sm text-gray-300">Electrons colliding with atoms generate heat.</p>
+                    <p class="text-sm text-white mt-2">Used in toasters, fuses.</p>
+                </div>
+                <div class="card card-info">
+                    <h3 class="text-xl font-bold mb-2">Magnetic Effect</h3>
+                    <p class="text-sm text-gray-300">Current generates a magnetic field.</p>
+                    <p class="text-sm text-white mt-2">Used in motors, generators.</p>
+                </div>
+                <div class="card card-success">
+                    <h3 class="text-xl font-bold mb-2">Chemical Effect</h3>
+                    <p class="text-sm text-gray-300">Current causes chemical reactions.</p>
+                    <p class="text-sm text-white mt-2">Used in batteries, electroplating.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-55">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h1 class="text-6xl text-red-500 font-bold mb-6">Electrical Safety</h1>
+            <p class="text-2xl text-gray-300 mb-8">Your #1 Priority</p>
+            
+            <div class="bg-gray-800 p-8 rounded border border-red-500 inline-block">
+                <p class="text-xl text-gray-300 mb-4">Electricity is invisible and gives no warning. Respect it, always.</p>
+                <p class="text-2xl italic text-white">"There are old electricians and there are bold electricians, but there are no old, bold electricians."</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-56">
+        <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl text-yellow-400 mb-4">The Human Body & Electricity</h2>
+                <p class="text-gray-300 mb-4 text-lg">Why is electricity dangerous? Because the human body is a conductor.</p>
+                <div class="bg-gray-800 p-6 rounded border border-white">
+                    <p class="text-gray-300">Our nervous system works using tiny electrical signals. External current can override these signals with disastrous results.</p>
+                </div>
+            </div>
+            <div class="img-box bg-white">
+                
+
+[Image of Human Nervous System Diagram]
+
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-57">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-red-500 mb-6">Effects of Current (AC)</h2>
+            <div class="space-y-4 text-left">
+                <div class="flex items-center bg-gray-800 p-4 rounded">
+                    <div class="w-24 font-bold text-white">1 mA</div>
+                    <div class="text-gray-300">Can just be felt (perception level).</div>
+                </div>
+                <div class="flex items-center bg-gray-800 p-4 rounded">
+                    <div class="w-24 font-bold text-yellow-400">5 mA</div>
+                    <div class="text-gray-300">Shock is painful.</div>
+                </div>
+                <div class="flex items-center bg-gray-800 p-4 rounded border-l-4 border-orange-500">
+                    <div class="w-24 font-bold text-orange-400">10-20 mA</div>
+                    <div class="text-gray-300">Muscle contractions. "Let-go" threshold.</div>
+                </div>
+                <div class="flex items-center bg-gray-800 p-4 rounded border-l-4 border-red-500">
+                    <div class="w-24 font-bold text-red-500">50-100 mA</div>
+                    <div class="text-gray-300">Ventricular Fibrillation. Often fatal.</div>
+                </div>
+            </div>
+            <p class="text-center mt-6 text-xl font-bold text-white">It takes very little current to kill.</p>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-58">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6">Main Electrical Hazards</h2>
+            <div class="grid grid-cols-2 gap-6">
+                <div class="card card-danger">
+                    <h3 class="text-xl font-bold mb-2">Electric Shock</h3>
+                    <p class="text-sm text-gray-300">Current passing through the body. Path across heart is critical.</p>
+                </div>
+                <div class="card card-danger">
+                    <h3 class="text-xl font-bold mb-2">Burns</h3>
+                    <p class="text-sm text-gray-300">Caused by current heating tissue or contact with hot components.</p>
+                </div>
+                <div class="card card-danger">
+                    <h3 class="text-xl font-bold mb-2">Arc Flash</h3>
+                    <p class="text-sm text-gray-300">Explosive energy release. Fatal burns, pressure waves, shrapnel.</p>
+                </div>
+                <div class="card card-danger">
+                    <h3 class="text-xl font-bold mb-2">Fire</h3>
+                    <p class="text-sm text-gray-300">Overloaded circuits or short circuits igniting materials.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-59">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-green-400 mb-6">Basic Safety Rules</h2>
+            <div class="bg-gray-800 p-8 rounded border border-green-500 text-left">
+                <ul class="list-decimal pl-5 space-y-4 text-xl text-gray-300">
+                    <li>ALWAYS assume a circuit is live until proved dead.</li>
+                    <li>Use a known, working voltage tester.</li>
+                    <li><strong>Lockout/Tagout (LOTO):</strong> Isolate and lock power. Saves lives.</li>
+                    <li>Use insulated tools and PPE.</li>
+                    <li>Never work live unless necessary and trained.</li>
+                    <li>Keep work area clean and dry.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-60">
+        <div class="max-w-5xl mx-auto w-full text-center">
+            <h2 class="text-4xl text-yellow-400 mb-8">Key Takeaways</h2>
+            <div class="grid grid-cols-2 gap-8 text-2xl font-bold text-white">
+                <div class="bg-red-900/50 p-8 rounded border border-red-500">
+                    Respect all voltages.
+                </div>
+                <div class="bg-red-900/50 p-8 rounded border border-red-500">
+                    A tiny current can kill.
+                </div>
+                <div class="bg-green-900/50 p-8 rounded border border-green-500">
+                    Test Before You Touch.
+                </div>
+                <div class="bg-green-900/50 p-8 rounded border border-green-500">
+                    Lockout / Tagout saves lives.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-61">
+        <div class="max-w-5xl mx-auto w-full">
+            <h2 class="text-4xl text-yellow-400 mb-6 text-center">Comprehensive Review</h2>
+            <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                <ul class="space-y-4 text-lg text-gray-300">
+                    <li><strong class="text-white">Module 1:</strong> Atoms, valence electrons, conductors vs insulators.</li>
+                    <li><strong class="text-white">Module 2:</strong> Voltage, Current, Resistance, Flow direction.</li>
+                    <li><strong class="text-white">Module 3:</strong> Circuit parts, Symbols, Ohm's Law (V=IR), Prefixes.</li>
+                    <li><strong class="text-white">Module 4:</strong> Verified Ohm's Law and Safety procedures.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-62">
+        <div class="max-w-4xl mx-auto w-full text-center">
+            <h2 class="text-5xl text-yellow-400 mb-8">Summative Assessment</h2>
+            <i class="fas fa-edit text-6xl text-white mb-8"></i>
+            <p class="text-2xl text-gray-300 mb-6">It's time to put your knowledge to the test.</p>
+            <div class="bg-gray-800 p-6 rounded text-left inline-block">
+                <ul class="list-disc pl-5 text-gray-300 text-lg space-y-2">
+                    <li>You will be given assessment sheets.</li>
+                    <li>Read each question carefully.</li>
+                    <li>Show calculations where required.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="slide centered" id="slide-63">
+        <div class="text-center">
+            <h1 class="text-5xl text-green-400 mb-6">Unit 1 Complete</h1>
+            <p class="text-xl text-gray-400 mb-8">You have completed the foundational module.</p>
+            <button onclick="saveAndExit()" class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded text-xl font-bold transition">Complete & Exit</button>
+            <button onclick="goToSlide(1)" class="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded text-xl font-bold transition ml-4">Restart</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const UNIT_ID = 'm1_u1';
+        const HUB_PAGE = 'Electricity_Electronics_Hub.html';
+        const TOTAL_SLIDES = 63; 
+
+        let currentSlide = 1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem(UNIT_ID + '_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+            }
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.getElementById('progress').style.width = ((currentSlide / TOTAL_SLIDES) * 100) + '%';
+        }
+
+        function nextSlide() { if(currentSlide < TOTAL_SLIDES) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+        function goToSlide(n) { currentSlide = n; updateUI(); }
+
+        function saveAndExit() {
+            localStorage.setItem(UNIT_ID + '_slide', currentSlide);
+            if(currentSlide === TOTAL_SLIDES) {
+                localStorage.setItem(UNIT_ID, 'completed');
+            }
+            alert("Progress Saved!");
+            window.location.href = HUB_PAGE;
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem(UNIT_ID + '_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem(UNIT_ID + '_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+        updateUI();
+    </script>
+</body>
+</html>
