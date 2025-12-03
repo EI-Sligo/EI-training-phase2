@@ -25,7 +25,7 @@ const CONFIG_CLASSES = [
 // --- 3. MODULE & UNIT PERMISSIONS ---
 // Merged permissions list
 const CONFIG_PERMISSIONS = {
-    "module1": false,
+    "module1": true,
     "module2": true,
     "module3": false,
     "module4": false,
