@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 2.2.1: Cables & Termination</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #2d3748;
+            --steel-blue: #4a5568;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* --- SCROLLABLE CONTENT AREA --- */
+        .content-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 100px;
+            padding-top: 20px;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        .slide {
+            display: none;
+            padding: 2rem 1rem;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100%;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        /* --- FIXED FOOTER NAVIGATION --- */
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #2d3748;
+            border-top: 1px solid #4a5568;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 4px;
+            flex: 1;
+            max-width: 150px;
+            text-align: center;
+            user-select: none;
+            cursor: pointer;
+        }
+        .btn-nav:active { background-color: #e6c200; transform: translateY(2px); }
+
+        .progress-text {
+            color: #a0aec0;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        /* --- TOP RIGHT EXIT BUTTON --- */
+        .btn-exit {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: #4a5568;
+            color: white;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: 1px solid #718096;
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-exit:hover { background-color: #2d3748; border-color: var(--safety-yellow); }
+
+        .card {
+            background-color: #2d3748;
+            border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        /* --- IMAGES & LIGHTBOX --- */
+        .img-box {
+            height: 300px;
+            max-width: 600px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 2px solid #4a5568;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem auto;
+            cursor: zoom-in;
+        }
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Lightbox Overlay */
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #lightbox img {
+            max-width: 95%;
+            max-height: 80%;
+            border: 2px solid var(--safety-yellow);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        #lightbox-close {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        .tool-card-img {
+            height: 150px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid #4a5568;
+        }
+
+        .quiz-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #4a5568;
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+        }
+        .quiz-btn:hover {
+            background-color: #718096;
+        }
+        .correct { background-color: #48bb78 !important; }
+        .incorrect { background-color: #f56565 !important; }
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #1a202c; }
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #718096; }
+
+        /* Mobile Tweaks */
+        @media (max-width: 640px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            .img-box { height: 200px; }
+            .card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP BAR -->
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+    <button onclick="saveAndExit()" class="btn-exit"><i class="fas fa-save mr-2"></i> Exit</button>
+
+    <!-- 2. LIGHTBOX (Hidden by default) -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Zoomed Image">
+        <button id="lightbox-close">Close View</button>
+    </div>
+
+    <!-- 3. SCROLLABLE CONTENT -->
+    <div class="content-area">
+
+        <!-- SLIDE 1: Title -->
+        <div class="slide active" id="slide-1">
+            <div class="max-w-5xl mx-auto text-center">
+                <p class="text-yellow-400 text-xl mb-2 tracking-widest brand-font">Phase 2 Electrical Instrumentation</p>
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">Unit 2.2: Cables & Termination</h1>
+                <div class="w-24 h-2 bg-yellow-400 mx-auto mb-8"></div>
+                <p class="text-xl text-gray-300">Conductors, Insulation, Flexible Cords & Safety</p>
+
+                <!-- Resume Prompt -->
+                <div id="resume-prompt" class="hidden mt-8 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left">
+                    <p class="text-lg mb-4"><i class="fas fa-history text-green-400 mr-2"></i> You have a saved session.</p>
+                    <div class="flex gap-4">
+                        <button onclick="resumeSession()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded font-bold transition text-white">
+                            Resume from Slide <span id="saved-slide-num"></span>
+                        </button>
+                        <button onclick="clearSession()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition text-white">
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Learning Outcomes -->
+        <div class="slide" id="slide-2">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Learning Outcomes</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="card">
+                        <i class="fas fa-check text-green-400 mr-2"></i> Describe construction & application of PVC cables (up to 6mm²).
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-check text-green-400 mr-2"></i> Describe construction & application of flexible cords (up to 2.5mm²).
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-check text-green-400 mr-2"></i> State the effects of poor terminations (Heat/Fire).
+                    </div>
+                    <div class="card">
+                        <i class="fas fa-check text-green-400 mr-2"></i> Select and terminate cables correctly using appropriate tools.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Conducting Materials -->
+        <div class="slide" id="slide-3">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-4xl text-yellow-400 mb-6">Conducting Materials</h2>
+                    <ul class="space-y-4 text-gray-300">
+                        <li><strong class="text-yellow-400">Copper:</strong> Very good conductor. Soft, malleable, easy to joint. <br><em>The most common conductor used in domestic/house wiring.</em></li>
+                        <li><strong class="text-gray-400">Aluminium:</strong> Good conductor, light weight. Used for large power cables. Not for domestic circuits.</li>
+                        <li><strong class="text-gray-400">Silver:</strong> Best conductor but expensive. Used for switch contacts.</li>
+                        <li><strong class="text-gray-400">Tungsten:</strong> High melting point. Used for lamp filaments.</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border border-gray-600">
+                    <h3 class="text-xl font-bold mb-4">Safety: Dissimilar Metals</h3>
+                    <div class="bg-red-900/30 p-3 border-l-4 border-red-500 text-sm">
+                        <p><strong>WARNING:</strong> Copper and Aluminium conductors should not be directly connected together.</p>
+                        <p class="mt-2"><strong>Reason:</strong> They have different resistance and thermal expansion rates, leading to corrosion (Galvanic Action) and loose joints.</p>
+                    </div>
+                    
+                    <h3 class="text-xl font-bold mt-6 mb-2">Insulators</h3>
+                    <ul class="list-disc pl-5 text-sm text-gray-400">
+                        <li>PVC, Rubber, Porcelain.</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: KC 1 -->
+        <div class="slide" id="slide-4">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 1</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-800 p-6 rounded">
+                        <p class="font-bold mb-3">1. What is the most common conductor used in houses?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Aluminium</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Copper</button>
+                        <button onclick="check(this, false)" class="quiz-btn">Steel</button>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded">
+                        <p class="font-bold mb-3">2. Which material is NOT a conducting material?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Copper</button>
+                        <button onclick="check(this, false)" class="quiz-btn">Lead</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Glass</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Cable Construction -->
+        <div class="slide" id="slide-5">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-4xl text-yellow-400 mb-4">Cable Construction</h2>
+                    <p class="text-xl mb-4">A standard cable consists of 3 parts:</p>
+                    <ol class="list-decimal pl-5 text-gray-300 space-y-3">
+                        <li><strong>Conductor:</strong> Carries current (Copper).</li>
+                        <li><strong>Insulation:</strong> Basic protection against shock (PVC).</li>
+                        <li><strong>Sheath:</strong> The outer grey layer. <br><span class="text-green-400 font-bold">Function: Mechanical Protection.</span></li>
+                    </ol>
+                    <div class="mt-6 p-4 bg-blue-900/30 border-l-4 border-blue-500">
+                        <strong>Definition:</strong> The size of a conductor is measured by its <br><strong>Cross-Sectional Area (CSA)</strong> in mm².
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/cables_terminations/1.png')">
+                    <img src="images/cables_terminations/1.png" alt="Cable Construction">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Insulating Materials -->
+        <div class="slide" id="slide-6">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Insulating Materials</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="text-2xl font-bold mb-2">PVC</h3>
+                        <p class="text-lg mb-2 text-green-400">Poly-Vinyl Chloride</p>
+                        <p class="text-gray-300">Most common insulation. Tough, moisture resistant. <br>Temp range: 0°C to 70°C.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-2xl font-bold mb-2">Rubber / Flex</h3>
+                        <p class="text-gray-300">Used for flexible cords where movement is required (irons, kettles). Rubber is flexible but ages/cracks over time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: KC 2 -->
+        <div class="slide" id="slide-7">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 2</h2>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">1. What does PVC stand for?</p>
+                    <button onclick="check(this, true)" class="quiz-btn">Poly Vinyl Chloride</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Plastic Virtual Cable</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Polymer Vinyl Cable</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">2. What is the function of the outer sheath?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Insulation</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Mechanical Protection</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Conductor</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">3. The size of a conductor is measured by its?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Diameter</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Cross-Sectional Area</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Circumference</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Flexible Cords -->
+        <div class="slide" id="slide-8">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Flexible Cords</h2>
+                <p class="text-xl mb-6">Definition: A flexible cable with conductor CSA not exceeding 4mm².</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-gray-800 p-6 rounded border border-green-500">
+                        <h3 class="text-2xl mb-4">Standard Sizes (mm²)</h3>
+                        <div class="grid grid-cols-4 gap-2 text-center font-mono">
+                            <div class="bg-gray-700 p-2">0.5</div>
+                            <div class="bg-gray-700 p-2">0.75</div>
+                            <div class="bg-gray-700 p-2">1.0</div>
+                            <div class="bg-gray-700 p-2">1.25</div>
+                            <div class="bg-gray-700 p-2">1.5</div>
+                            <div class="bg-gray-700 p-2">2.5</div>
+                            <div class="bg-gray-700 p-2">4.0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold mb-2 text-red-400">ETCI Rule</h3>
+                        <p>The minimum size flexible cord allowed for fixed applications in a house (e.g. a pendant drop) is <strong>0.75 mm²</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: Terminating Cables -->
+        <div class="slide" id="slide-9">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-4xl text-yellow-400 mb-6">Terminating Techniques</h2>
+                    <h3 class="text-xl font-bold mb-2">The Perfect Termination</h3>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                        <li><strong>Insulation:</strong> Must go right up to the metal of the terminal (No bare copper showing).</li>
+                        <li><strong>Doubling Back:</strong> Solid conductors should be doubled back to fill the terminal and prevent the screw cutting through the wire.</li>
+                        <li><strong>Tightness:</strong> Must be mechanically and electrically sound.</li>
+                        <li><strong>Carrying Capacity:</strong> Must carry load current <strong>without an increase in temperature</strong>.</li>
+                    </ul>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/cables_terminations/2.png')">
+                    <img src="images/cables_terminations/2.png" alt="Terminating Techniques">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: Dangers of Loose Connections -->
+        <div class="slide" id="slide-10">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-4xl text-yellow-400 mb-6">Dangers of Loose Connections</h2>
+                <div class="bg-red-900/30 p-8 rounded border border-red-500 inline-block text-left">
+                    <h3 class="text-2xl font-bold mb-4 text-red-400">The Chain Reaction:</h3>
+                    <ol class="list-decimal pl-5 space-y-3 text-lg">
+                        <li>A loose connection reduces the contact area.</li>
+                        <li>This creates a <strong>High Resistance</strong> joint.</li>
+                        <li>Current flowing through resistance creates <strong>Heat</strong> (I²R).</li>
+                        <li>Heat causes insulation to melt/burn (Fire Hazard).</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: KC 3 -->
+        <div class="slide" id="slide-11">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 3</h2>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">1. According to ETCI, what is the minimum flex size in a house?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">0.5mm</button>
+                    <button onclick="check(this, true)" class="quiz-btn">0.75mm</button>
+                    <button onclick="check(this, false)" class="quiz-btn">1.0mm</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">2. A termination must carry current without...?</p>
+                    <button onclick="check(this, true)" class="quiz-btn">An increase in temperature</button>
+                    <button onclick="check(this, false)" class="quiz-btn">A decrease in insulation resistance</button>
+                    <button onclick="check(this, false)" class="quiz-btn">An increase in load current</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">3. What is the effect of a loose connection?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Low resistance path</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Magnetic effect</button>
+                    <button onclick="check(this, true)" class="quiz-btn">High resistant joint and heating effect</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: Tools -->
+        <div class="slide" id="slide-12">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Hand Tools</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                    <div class="card">
+                        <img src="images/cables_terminations/3.png" alt="Electrician Pliers" class="tool-card-img" onclick="openLightbox('images/cables_terminations/3.png')">
+                        <h3 class="text-lg font-bold mb-2">Pliers & Snips</h3>
+                        <p class="text-gray-300">Pliers for twisting/gripping. Side cutters (snips) for cutting cables and trimming insulation.</p>
+                    </div>
+                    <div class="card">
+                        <img src="images/cables_terminations/4.png" alt="Wire Strippers" class="tool-card-img" onclick="openLightbox('images/cables_terminations/4.png')">
+                        <h3 class="text-lg font-bold mb-2">Wire Strippers</h3>
+                        <p class="text-gray-300">Used to remove insulation without nicking the conductor. Nicked conductors break easily.</p>
+                    </div>
+                    <div class="card">
+                        <img src="images/cables_terminations/5.png" alt="Utility Knife" class="tool-card-img" onclick="openLightbox('images/cables_terminations/5.png')">
+                        <h3 class="text-lg font-bold mb-2">Knives</h3>
+                        <p class="text-gray-300">Electrician's knife used for stripping the outer sheath of large cables. Always cut away from yourself.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: Fixing Devices -->
+        <div class="slide" id="slide-13">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Fixing Devices</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <img src="images/cables_terminations/6.png" alt="Wood Screws (Pointed)" class="tool-card-img" onclick="openLightbox('images/cables_terminations/6.png')">
+                        <h3 class="text-xl font-bold text-yellow-400 mb-2">Woodscrews</h3>
+                        <p class="text-gray-300"><strong>Pointed Tip.</strong> Coarse thread. Used for fixing into timber or into wall plugs (red/brown plugs) for mounting backing boxes.</p>
+                    </div>
+                    <div class="card border border-blue-500">
+                        <img src="images/cables_terminations/7.png" alt="Machine Screws (Blunt)" class="tool-card-img" onclick="openLightbox('images/cables_terminations/7.png')">
+                        <h3 class="text-xl font-bold text-blue-400 mb-2">Machine Thread Screws</h3>
+                        <p class="text-gray-300"><strong>Blunt/Flat End.</strong> Fine thread. Used for fixing <strong>switch and socket faces</strong> to their metal back boxes. (Typical Size: M3.5)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: SWA Cables -->
+        <div class="slide" id="slide-14">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-4xl text-yellow-400 mb-6">SWA Cable Bending Radius</h2>
+                <p class="text-xl mb-6">SWA = Steel Wire Armour. Used for underground/industrial mains.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-left">
+                    <div class="bg-gray-800 p-8 rounded border border-green-500">
+                        <h3 class="text-2xl font-bold mb-4">The Rule: 8 x D</h3>
+                        <p class="mb-4">The internal bending radius for SWA is typically 8 times the overall diameter.</p>
+                        
+                        <div class="bg-gray-900 p-4 rounded">
+                            <p class="text-yellow-400 font-bold mb-2">Example Calculation:</p>
+                            <p>Cable Diameter: <strong>20mm</strong></p>
+                            <p>Calculation: 20 x 8 = 160</p>
+                            <p class="text-xl mt-2 border-t border-gray-600 pt-2">Minimum Radius = <strong>160mm</strong></p>
+                        </div>
+                    </div>
+                    <div class="img-box bg-white" onclick="openLightbox('images/cables_terminations/8.png')">
+                        <img src="images/cables_terminations/8.png" alt="Steel Wire Armour Cable Layers">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: KC 4 -->
+        <div class="slide" id="slide-15">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 4</h2>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">1. Where is a machine thread screw used?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Fixing boxes to block walls</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Fixing switch and socket faces to boxes</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Fixing backing boxes to timber</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">2. What is the min radius bend for 20mm SWA cable?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">100mm</button>
+                    <button onclick="check(this, false)" class="quiz-btn">120mm</button>
+                    <button onclick="check(this, true)" class="quiz-btn">160mm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 16: Resistance Factors -->
+        <div class="slide" id="slide-16">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Factors Affecting Resistance</h2>
+                <div class="bg-gray-800 p-8 rounded border border-blue-500">
+                    <p class="text-xl mb-4">The resistance of a conductor depends on (Formula R = ρ x L / A):</p>
+                    <ul class="list-disc pl-5 space-y-3 text-lg text-gray-300">
+                        <li><strong>Length (L):</strong> Longer cable = Higher Resistance.</li>
+                        <li><strong>Cross-Sectional Area (A):</strong> Thicker cable = Lower Resistance.</li>
+                        <li><strong>Material (ρ):</strong> Copper has lower resistance than Aluminium.</li>
+                        <li><strong>Temperature:</strong> Heat increases resistance.</li>
+                    </ul>
+                    <div class="mt-6 bg-red-900/30 p-4 rounded border-l-4 border-red-500">
+                        <strong>Important:</strong> Resistance does NOT depend on the <strong>Insulation</strong> type.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 17: Voltage Drop -->
+        <div class="slide" id="slide-17">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Voltage Drop</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-4">What is it?</h3>
+                        <p class="text-gray-300">When current flows through a cable, some voltage is "lost" along the way due to the resistance of the copper.</p>
+                    </div>
+                    <div class="card border border-green-500">
+                        <h3 class="text-xl font-bold mb-4 text-green-400">How to Reduce it? </h3>
+                        <p class="text-gray-300 mb-4">To reduce voltage drop, we must reduce the resistance.</p>
+                        <div class="bg-green-900/30 p-4 rounded">
+                            <strong>Solution:</strong> Increase the Cross-Sectional Area (CSA) of the conductor. (Use a thicker cable).
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 18: Current Ratings & Ambient Temp -->
+        <div class="slide" id="slide-18">
+            <div class="max-w-4xl mx-auto w-full text-center">
+                <h2 class="text-4xl text-yellow-400 mb-6">Current Ratings & Temperature</h2>
+                <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                    <p class="text-xl mb-4">The current carrying capacity of a cable depends on how hot it gets.</p>
+                    <p class="text-lg text-gray-300 mb-6">The standard tables in the ETCI Rules for current rating and voltage drop are based on a specific ambient temperature.</p>
+                    
+                    <div class="bg-blue-900/30 p-6 rounded border-2 border-blue-500 inline-block">
+                        <span class="text-4xl font-bold text-white">30°C</span>
+                        <p class="text-sm mt-2 text-blue-300">Standard Ambient Temperature</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 19: KC 5 -->
+        <div class="slide" id="slide-19">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 5</h2>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">1. The resistance of a conductor is NOT dependent on...?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">The length</button>
+                    <button onclick="check(this, true)" class="quiz-btn">The insulation</button>
+                    <button onclick="check(this, false)" class="quiz-btn">The cross-sectional area</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">2. Voltage drop in cables can be reduced by...?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">Increasing length</button>
+                    <button onclick="check(this, true)" class="quiz-btn">Increasing the cross-sectional area</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Decreasing the cross-sectional area</button>
+                </div>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">3. ETCI tables are based on an ambient temp of...?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">20°C</button>
+                    <button onclick="check(this, true)" class="quiz-btn">30°C</button>
+                    <button onclick="check(this, false)" class="quiz-btn">45°C</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 20: Regulating Bodies -->
+        <div class="slide" id="slide-20">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Regulating Bodies</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-2 text-blue-400">ETCI</h3>
+                        <p><strong>Electro-Technical Council of Ireland.</strong> Produces the National Rules for Electrical Installations (The Rules). Purpose: Safety.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-2 text-green-400">RECI / Safe Electric</h3>
+                        <p>Register of Electrical Contractors of Ireland. Regulates contractors.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-2 text-yellow-400">IEC</h3>
+                        <p><strong>International Electro-technical Commission.</strong> Global body for electrical standards.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-2 text-red-400">CENELEC</h3>
+                        <p>European Committee for Electro-technical Standardisation. Harmonises standards across Europe.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 21: KC 6 -->
+        <div class="slide" id="slide-21">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 6</h2>
+                <div class="bg-gray-800 p-6 rounded mb-4">
+                    <p class="font-bold mb-3">1. What does IEC stand for?</p>
+                    <button onclick="check(this, false)" class="quiz-btn">International Electrical Company</button>
+                    <button onclick="check(this, true)" class="quiz-btn">International Electro-technical Commission</button>
+                    <button onclick="check(this, false)" class="quiz-btn">Internal Electrical Contractor</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 22: Safety Summary -->
+        <div class="slide" id="slide-22">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-4xl text-yellow-400 mb-6">Safety Criticals</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                    <div class="bg-red-900/30 p-6 rounded border border-red-500">
+                        <h3 class="text-xl font-bold mb-2">Stripping</h3>
+                        <p class="text-gray-300 text-sm">Never nick the conductor. It reduces CSA and causes heating.</p>
+                    </div>
+                    <div class="bg-yellow-900/30 p-6 rounded border border-yellow-500">
+                        <h3 class="text-xl font-bold mb-2">Termination</h3>
+                        <p class="text-gray-300 text-sm">Tighten screws sufficiently. Double back conductors.</p>
+                    </div>
+                    <div class="bg-blue-900/30 p-6 rounded border border-blue-500">
+                        <h3 class="text-xl font-bold mb-2">Selection</h3>
+                        <p class="text-gray-300 text-sm">Use correct cable size for the load. Use correct sheath for the environment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 23: Identification -->
+        <div class="slide" id="slide-23">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Cable Identification</h2>
+                <table class="w-full text-lg border-collapse">
+                    <thead>
+                        <tr class="bg-gray-800 text-yellow-400">
+                            <th class="border border-gray-600 p-4 text-left w-1/3">Function</th>
+                            <th class="border border-gray-600 p-4 text-center w-1/3">Old Colour</th>
+                            <th class="border border-gray-600 p-4 text-center w-1/3">New Colour (Harmonised)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border border-gray-600">
+                            <td class="border border-gray-600 p-4 font-bold">Phase (Live)</td>
+                            <td class="border border-gray-600 p-4 text-center">Red</td>
+                            <td class="border border-gray-600 p-4 text-center font-bold text-yellow-600">Brown</td>
+                        </tr>
+                        <tr class="border border-gray-600 bg-gray-800">
+                            <td class="border border-gray-600 p-4 font-bold">Neutral</td>
+                            <td class="border border-gray-600 p-4 text-center">Black</td>
+                            <td class="border border-gray-600 p-4 text-center font-bold text-blue-400">Blue</td>
+                        </tr>
+                        <tr class="border border-gray-600">
+                            <td class="border border-gray-600 p-4 font-bold">Earth (CPC)</td>
+                            <td class="border border-gray-600 p-4 text-center">Green</td>
+                            <td class="border border-gray-600 p-4 text-center font-bold text-green-400">Green/Yellow</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="mt-6 p-4 bg-gray-800 rounded text-center">
+                    <p><strong>Sleeving:</strong> Any bare Earth conductor (e.g. in Twin & Earth) must be sleeved Green/Yellow at terminations.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 24: Sizing Cables -->
+        <div class="slide" id="slide-24">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Standard Cable Sizes</h2>
+                    <p class="mb-4 text-gray-300">Typical applications for domestic PVC/PVC:</p>
+                    <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                        <li><strong>1.5mm²:</strong> Lighting Circuits.</li>
+                        <li><strong>2.5mm²:</strong> Socket Circuits (Radial/Ring).</li>
+                        <li><strong>6.0mm²:</strong> Showers / Cookers.</li>
+                        <li><strong>10.0mm²:</strong> Electric Showers (High Power).</li>
+                        <li><strong>16.0mm²:</strong> Main Tails (Meter to Consumer Unit).</li>
+                    </ul>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/cables_terminations/9.png')">
+                    <img src="images/cables_terminations/9.png" alt="Electrical cable sizes">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 25: Summary -->
+        <div class="slide" id="slide-25">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl text-yellow-400 mb-8">Module Summary</h2>
+                <div class="text-left bg-gray-800 p-8 rounded border border-gray-600 text-lg mb-8">
+                    <ul class="space-y-3 text-gray-300">
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Materials:</strong> Copper is standard. PVC is insulator.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Termination:</strong> Tight, clean, no bare copper outside terminal.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Safety:</strong> Loose connections cause fire.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Rules:</strong> 0.75mm min flex. 8xD SWA bend radius.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 26: Complete -->
+        <div class="slide" id="slide-26">
+            <div class="text-center">
+                <h1 class="text-4xl text-yellow-400 mb-4">Phase 2 Electrical Instrumentation</h1>
+                <p class="text-xl text-gray-400 mb-8">Unit 2.2.1 Complete</p>
+                <button onclick="goToSlide(1)" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded">Restart Presentation</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. FIXED FOOTER -->
+    <div class="nav-footer">
+        <button onclick="prevSlide()" class="btn-nav">PREV</button>
+        <span class="progress-text"><span id="page-indicator">1</span> / 26</span>
+        <button onclick="nextSlide()" class="btn-nav">NEXT</button>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const UNIT_ID = 'unit22'; 
+        const HUB_PAGE = 'Installation_Techniques_Hub.html'; 
+        const TOTAL_SLIDES = 26;
+
+        let currentSlide = 1;
+
+        // --- LIGHTBOX LOGIC ---
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        // --- STANDARD LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem(UNIT_ID + '_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+                document.getElementById('saved-slide-num').innerText = savedSlide;
+            }
+            updateUI();
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const slide = document.getElementById(`slide-${currentSlide}`);
+            if(slide) slide.classList.add('active');
+            
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.querySelector('.content-area').scrollTop = 0;
+        }
+
+        function nextSlide() { if(currentSlide < TOTAL_SLIDES) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+        function goToSlide(n) { currentSlide = n; updateUI(); }
+
+        function saveAndExit() {
+            localStorage.setItem(UNIT_ID + '_slide', currentSlide);
+            if(currentSlide === TOTAL_SLIDES) {
+                localStorage.setItem(UNIT_ID, 'completed');
+            }
+            window.location.href = HUB_PAGE;
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem(UNIT_ID + '_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem(UNIT_ID + '_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => { b.classList.remove('correct', 'incorrect'); b.style.opacity = '0.5'; });
+            btn.style.opacity = '1';
+            if(isCorrect) btn.classList.add('correct'); else btn.classList.add('incorrect');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+    </script>
+</body>
+</html>

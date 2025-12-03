@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrical Hazards & Protective Devices</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --steel-blue: #4a5568;
+            --accent-red: #e53e3e;
+            --accent-green: #48bb78;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* --- SCROLLABLE CONTENT AREA --- */
+        .content-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 100px;
+            padding-top: 20px;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        .slide {
+            display: none;
+            padding: 2rem 1rem;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100%;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        /* --- FIXED FOOTER NAVIGATION --- */
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #2d3748;
+            border-top: 1px solid #4a5568;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 4px;
+            flex: 1;
+            max-width: 150px;
+            text-align: center;
+            user-select: none;
+            cursor: pointer;
+        }
+        .btn-nav:active { background-color: #e6c200; transform: translateY(2px); }
+
+        .progress-text {
+            color: #a0aec0;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        /* --- TOP RIGHT EXIT BUTTON --- */
+        .btn-exit {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: #4a5568;
+            color: white;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: 1px solid #718096;
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-exit:hover { background-color: #2d3748; border-color: var(--safety-yellow); }
+
+        .card {
+            background-color: #2d3748;
+            border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .card-danger { border-left-color: var(--accent-red); }
+        .card-info { border-left-color: #4299e1; }
+        .card-success { border-left-color: var(--accent-green); }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        /* --- IMAGES & LIGHTBOX --- */
+        .img-box {
+            height: 300px;
+            max-width: 600px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 2px solid #4a5568;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem auto;
+            cursor: zoom-in;
+        }
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Lightbox Overlay */
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #lightbox img {
+            max-width: 95%;
+            max-height: 80%;
+            border: 2px solid var(--safety-yellow);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        #lightbox-close {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        .quiz-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: var(--steel-blue);
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+        }
+        .quiz-btn:hover {
+            background-color: #718096;
+        }
+        .correct { background-color: var(--accent-green) !important; color: white;}
+        .incorrect { background-color: var(--accent-red) !important; color: white;}
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #1a202c; }
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #718096; }
+
+        .definition-term {
+            color: var(--safety-yellow);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP BAR -->
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+    <button onclick="saveAndExit()" class="btn-exit"><i class="fas fa-save mr-2"></i> Exit</button>
+
+    <!-- 2. LIGHTBOX (Hidden by default) -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Zoomed Image">
+        <button id="lightbox-close">Close View</button>
+    </div>
+
+    <!-- 3. SCROLLABLE CONTENT -->
+    <div class="content-area">
+
+        <!-- SLIDE 1: Title -->
+        <div class="slide active" id="slide-1">
+            <div class="max-w-5xl mx-auto text-center">
+                <p class="text-yellow-400 text-xl mb-2 tracking-widest brand-font">Phase 2 Electrical Instrumentation</p>
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">Electrical Hazards & Protective Devices</h1>
+                <div class="w-24 h-2 bg-yellow-400 mx-auto mb-8"></div>
+                <p class="text-xl text-gray-300">Comprehensive Guide to Shock, Earthing, and Circuit Protection</p>
+
+                <div id="resume-prompt" class="hidden mt-8 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left shadow-lg">
+                    <p class="text-lg mb-4 text-white"><i class="fas fa-history text-green-400 mr-2"></i> You have a saved session.</p>
+                    <div class="flex gap-4">
+                        <button onclick="resumeSession()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded font-bold transition text-white">
+                            Resume from Slide <span id="saved-slide-num"></span>
+                        </button>
+                        <button onclick="clearSession()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded transition text-white">
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Electric Shock Deep Dive -->
+        <div class="slide" id="slide-2">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-6">Electric Shock Hazards</h2>
+                    <div class="bg-gray-800 p-6 rounded border-l-4 border-red-500 mb-4">
+                        <h3 class="text-xl font-bold text-red-400 mb-2">Severity Factors</h3>
+                        <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                            <li><strong>Voltage:</strong> Higher potential drives more current.</li>
+                            <li><strong>Duration:</strong> Time of exposure (hence 0.4s disconnection time).</li>
+                            <li><strong>Path:</strong> Route through body (e.g., Hand to Foot).</li>
+                            <li><strong>Body Resistance:</strong> Skin resistance drops drastically when wet.</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-gray-900 rounded">
+                        <p class="text-sm text-gray-400"><strong>Exam Note:</strong> The severity of an electric shock is significantly increased by having <span class="text-yellow-400 font-bold">wet skin</span>.</p>
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/protective_devices/1.png')">
+                    <img src="images/protective_devices/1.png" alt="Electric Shock Path Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Protection: The Basic Principles -->
+        <div class="slide" id="slide-3">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-8">Protection Fundamentals</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="text-xl font-bold mb-2">Overload Current</h3>
+                        <p class="text-gray-300">An overcurrent occurring in a circuit that is electrically sound (e.g., plugging too many heaters into one socket).</p>
+                    </div>
+                    <div class="card card-danger">
+                        <h3 class="text-xl font-bold mb-2">Short Circuit</h3>
+                        <p class="text-gray-300">An overcurrent resulting from a fault of negligible impedance between live conductors (L-N).</p>
+                    </div>
+                    <div class="card card-info">
+                        <h3 class="text-xl font-bold mb-2">Discrimination</h3>
+                        <p class="text-gray-300">Designing the system so that only the protective device nearest to the fault operates, leaving other circuits healthy.</p>
+                    </div>
+                    <div class="card card-success">
+                        <h3 class="text-xl font-bold mb-2">Main Switch Fuse</h3>
+                        <p class="text-gray-300">In a consumer unit, its function is to provide both <strong class="text-white">Protection and Isolation</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Fuses -->
+        <div class="slide" id="slide-4">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Fuses</h2>
+                    <p class="text-gray-300 mb-4">A fuse is a "weak link" in a circuit designed to break the flow of current.</p>
+                    <div class="bg-gray-800 p-6 rounded mb-4">
+                        <h3 class="font-bold text-lg mb-2">Operation</h3>
+                        <ul class="list-disc pl-5 text-gray-300">
+                            <li>Utilises the <strong>Heating Effect</strong> of current.</li>
+                            <li>Operates when <span class="text-red-400 font-bold">too high a current flows</span>.</li>
+                            <li>Protects the cable, not the appliance.</li>
+                        </ul>
+                    </div>
+                    <div class="p-3 bg-red-900/30 border border-red-500 rounded text-sm">
+                        <strong>Rating Rule:</strong> Determined by the capacity of the <em>smallest conductor</em> in the circuit.
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/protective_devices/2.png')">
+                    <img src="images/protective_devices/2.png" alt="Fuse Types and Construction">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Miniature Circuit Breakers (MCB) -->
+        <div class="slide" id="slide-5">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">MCB Construction</h2>
+                    <p class="text-gray-300 mb-6">MCBs use two distinct mechanisms for detection:</p>
+                    
+                    <div class="space-y-4">
+                        <div class="card card-info">
+                            <h3 class="font-bold text-blue-300"><i class="fas fa-thermometer-half mr-2"></i> Thermal Element</h3>
+                            <p class="text-gray-400 text-sm">A <strong>Bi-metal strip</strong> that bends when heated. Detects low-level <strong>Overloads</strong> over time.</p>
+                        </div>
+                        <div class="card card-danger">
+                            <h3 class="font-bold text-red-300"><i class="fas fa-magnet mr-2"></i> Magnetic Element</h3>
+                            <p class="text-gray-400 text-sm">A <strong>Solenoid/Coil</strong> that trips instantly. Detects high-level <strong>Short Circuits</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('himages/protective_devices/3.gif')">
+                    <img src="images/protective_devices/3.gif" alt="MCB Internal Mechanism Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: MCB Types -->
+        <div class="slide" id="slide-6">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-4xl text-yellow-400 mb-8">MCB Classifications</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="bg-gray-800 p-6 rounded border-t-4 border-green-500">
+                        <h3 class="text-2xl font-bold mb-2">Type B</h3>
+                        <p class="text-sm text-gray-400 mb-4">Trips at 3x - 5x rated current.</p>
+                        <p class="text-green-400 font-bold">Domestic / General Purpose</p>
+                        <p class="text-xs text-gray-500 mt-2">(Resistive loads, lighting)</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded border-t-4 border-yellow-500">
+                        <h3 class="text-2xl font-bold mb-2">Type C</h3>
+                        <p class="text-sm text-gray-400 mb-4">Trips at 5x - 10x rated current.</p>
+                        <p class="text-yellow-400 font-bold">Commercial / Inductive</p>
+                        <p class="text-xs text-gray-500 mt-2">(Motors, fluorescent lighting)</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded border-t-4 border-red-500">
+                        <h3 class="text-2xl font-bold mb-2">Type D</h3>
+                        <p class="text-sm text-gray-400 mb-4">Trips at 10x - 20x rated current.</p>
+                        <p class="text-red-400 font-bold">Industrial / Heavy Inrush</p>
+                        <p class="text-xs text-gray-500 mt-2">(X-ray machines, transformers)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Quiz 1 -->
+        <div class="slide" id="slide-7">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Quick Quiz 1</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">1. An MCB uses which two detection methods?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Resistive & Inductive</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Thermal & Magnetic</button>
+                        <button onclick="check(this, false)" class="quiz-btn">Chemical & Heating</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">2. Which MCB type is for domestic use?</p>
+                        <button onclick="check(this, true)" class="quiz-btn">Type B</button>
+                        <button onclick="check(this, false)" class="quiz-btn">Type C</button>
+                        <button onclick="check(this, false)" class="quiz-btn">Type D</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Residual Current Device (RCD) -->
+        <div class="slide" id="slide-8">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">RCD Principles</h2>
+                    <div class="bg-gray-800 p-6 rounded">
+                        <h3 class="font-bold text-lg mb-2">Core Balance Principle</h3>
+                        <p class="text-gray-300 mb-4">In a healthy circuit, current flowing in (Live) equals current flowing out (Neutral).</p>
+                        <div class="bg-black p-4 rounded font-mono text-green-400 text-center border border-gray-600 mb-4">
+                            I<sub>Live</sub> - I<sub>Neutral</sub> = 0
+                        </div>
+                        <p class="text-gray-300">If there is a difference, current is leaking to Earth. The RCD detects this <strong>Residual Current</strong>.</p>
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/protective_devices/4.png')">
+                    <img src="images/protective_devices/4.png" alt="RCD Toroid Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: RCD Details -->
+        <div class="slide" id="slide-9">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">RCD Components & Application</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="font-bold text-xl mb-3">Components</h3>
+                        <ul class="list-disc pl-5 space-y-2 text-gray-300">
+                            <li><strong>Magnetic Core (Toroid):</strong> Senses flux imbalance.</li>
+                            <li><strong>Search Coil (Pick-up):</strong> Induces tripping current.</li>
+                            <li><strong>Trip Coil:</strong> Activates the mechanism.</li>
+                            <li><strong>Test Button:</strong> Simulates a fault.</li>
+                            <li class="text-red-400"><em>Note: A Capacitor is NOT a standard component.</em></li>
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="card card-success">
+                            <h3 class="font-bold text-xl mb-2">30mA Sensitivity</h3>
+                            <p class="text-gray-300">Mandatory for Socket Circuits, Showers, and Bathrooms to prevent fatal shock.</p>
+                        </div>
+                        <div class="card card-info">
+                            <h3 class="font-bold text-xl mb-2">The RCBO</h3>
+                            <p class="text-gray-300">Residual Current Breaker with Overcurrent.<br><strong>RCBO = MCB + RCD</strong> combined.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: Earthing & Bonding -->
+        <div class="slide" id="slide-10">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Earthing & Bonding</h2>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-800 rounded border-l-4 border-yellow-500">
+                            <h3 class="font-bold">Extraneous Conductive Part</h3>
+                            <p class="text-sm text-gray-400">A metal part not of the electrical installation that can introduce earth potential (e.g., Water Pipes, Stainless Steel Sink).</p>
+                        </div>
+                        <div class="p-4 bg-gray-800 rounded border-l-4 border-green-500">
+                            <h3 class="font-bold">Main Equipotential Bonding</h3>
+                            <p class="text-sm text-gray-400">Connecting incoming metallic services (Gas, Water) to the Main Earthing Terminal (MET).</p>
+                        </div>
+                        <div class="p-4 bg-gray-800 rounded border-l-4 border-red-500">
+                            <h3 class="font-bold">Safety Label</h3>
+                            <p class="text-sm text-gray-400">Connection to earth electrode must be labelled: <em>"Safety Electrical Connection - Do Not Remove"</em>.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/protective_devices/5.png')">
+                    <img src="images/protective_devices/5.png" alt="Earthing and Bonding Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: Fault Loop Impedance (Zs) -->
+        <div class="slide" id="slide-11">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Earth Fault Loop Impedance (Zs)</h2>
+                    <p class="text-gray-300 mb-4">The path current takes during a Phase-to-Earth fault.</p>
+                    <div class="bg-gray-800 p-6 rounded mb-4">
+                        <h3 class="text-xl font-bold mb-2">Why must Zs be low?</h3>
+                        <p class="text-gray-300">To allow a <strong>high enough fault current</strong> to flow so that the fuse or MCB operates within the required time (e.g., 0.4s).</p>
+                        <p class="mt-2 text-sm text-gray-500">Ohm's Law: I<sub>fault</sub> = V / Zs. If Z is high, I is low, and the fuse won't blow quickly.</p>
+                    </div>
+                    <div class="card card-info">
+                        <p class="font-mono text-lg">Max Zs for 20A Type B MCB ≈ <span class="text-white font-bold">1.15Ω</span></p>
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/protective_devices/6.png')">
+                    <img src="images/protective_devices/6.png" alt="Fault Loop Path Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: Disconnection Times -->
+        <div class="slide" id="slide-12">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-4xl text-yellow-400 mb-8">Max Disconnection Times</h2>
+                <p class="text-gray-400 mb-8">According to ETCI Rules (Tables A61C-1 & 2)</p>
+                
+                <div class="grid grid-cols-2 gap-10">
+                    <div class="bg-gray-800 p-10 rounded border-t-8 border-red-500 shadow-xl">
+                        <i class="fas fa-stopwatch text-6xl text-red-500 mb-6"></i>
+                        <h3 class="text-3xl font-bold text-white mb-2">0.4 Seconds</h3>
+                        <p class="text-gray-400">Final circuits < 32A</p>
+                        <p class="text-sm text-gray-500">(Sockets, Handheld equipment)</p>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-10 rounded border-t-8 border-blue-500 shadow-xl">
+                        <i class="fas fa-clock text-6xl text-blue-500 mb-6"></i>
+                        <h3 class="text-3xl font-bold text-white mb-2">5 Seconds</h3>
+                        <p class="text-gray-400">Distribution Circuits</p>
+                        <p class="text-sm text-gray-500">(Fixed equipment, Sub-mains)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: Quiz 2 -->
+        <div class="slide" id="slide-13">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Quick Quiz 2</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">1. Residual current means?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Sum of L and N</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Difference between L and N</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">2. What is an RCBO?</p>
+                        <button onclick="check(this, true)" class="quiz-btn">Combined MCB and RCD</button>
+                        <button onclick="check(this, false)" class="quiz-btn">RCD with a fuse</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">3. Component NOT in an RCD?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Trip Coil</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Capacitor</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: Quiz 3 -->
+        <div class="slide" id="slide-14">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Quick Quiz 3</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">1. Max disconnect time for sockets?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">5 Seconds</button>
+                        <button onclick="check(this, true)" class="quiz-btn">0.4 Seconds</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">2. Why keep earth loop impedance low?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">To prevent voltage drop</button>
+                        <button onclick="check(this, true)" class="quiz-btn">To ensure protective device operates fast enough</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">3. Example of Extraneous Conductive Part?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Distribution Board</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Stainless Steel Sink</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: Summary -->
+        <div class="slide" id="slide-15">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-5xl text-yellow-400 mb-8">Unit Complete</h2>
+                <div class="bg-gray-800 p-8 rounded border border-gray-600 text-lg text-left">
+                    <p class="mb-4">You have reviewed:</p>
+                    <ul class="space-y-3 text-gray-300">
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Electric Shock:</strong> Severity factors (Wet Skin).</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Protection:</strong> MCBs (Thermal/Magnetic), RCDs (Core Balance).</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Earthing:</strong> Fault Loop Impedance, Bonding.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Regulations:</strong> 0.4s disconnect time, Zs values.</li>
+                    </ul>
+                </div>
+                <div class="mt-8">
+                    <button onclick="saveAndExit()" class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded text-xl font-bold transition">Finish & Exit</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. FIXED FOOTER -->
+    <div class="nav-footer">
+        <button onclick="prevSlide()" class="btn-nav">PREV</button>
+        <span class="progress-text"><span id="page-indicator">1</span> / 15</span>
+        <button onclick="nextSlide()" class="btn-nav">NEXT</button>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const UNIT_ID = 'unit5_ex'; 
+        const HUB_PAGE = 'Installation_Techniques_Hub.html'; 
+        const TOTAL_SLIDES = 15;
+
+        let currentSlide = 1;
+
+        // --- LIGHTBOX LOGIC ---
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        // --- STANDARD LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem('unit5_ex_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+                document.getElementById('saved-slide-num').innerText = savedSlide;
+            }
+            updateUI();
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const slide = document.getElementById(`slide-${currentSlide}`);
+            if(slide) slide.classList.add('active');
+            
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.querySelector('.content-area').scrollTop = 0;
+        }
+
+        function nextSlide() { if(currentSlide < TOTAL_SLIDES) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+        function goToSlide(n) { currentSlide = n; updateUI(); }
+
+        function saveAndExit() {
+            localStorage.setItem('unit5_ex_slide', currentSlide);
+            if(currentSlide === TOTAL_SLIDES) {
+                localStorage.setItem('unit5_final', 'completed');
+            }
+            window.location.href = HUB_PAGE;
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem('unit5_ex_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem('unit5_ex_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => { b.classList.remove('correct', 'incorrect'); b.style.opacity = '0.5'; });
+            btn.style.opacity = '1';
+            if(isCorrect) btn.classList.add('correct'); else btn.classList.add('incorrect');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+    </script>
+</body>
+</html>

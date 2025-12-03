@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Unit 9: Installation Testing & Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        /* --- UNIVERSAL RESPONSIVE LAYOUT --- */
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --card-bg: #2d3748;
+            --steel-blue: #4a5568;
+            --accent-red: #e53e3e;
+            --accent-green: #48bb78;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a202c;
+            color: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1, h2, h3, .brand-font { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px; width: 100%; position: fixed; top: 0; left: 0; z-index: 50;
+        }
+
+        /* --- SCROLLABLE CONTENT AREA --- */
+        .content-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 100px;
+            padding-top: 20px;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        /* --- SLIDES --- */
+        .slide {
+            display: none;
+            padding: 2rem 1rem;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100%;
+        }
+        .slide.active { display: flex; }
+
+        /* --- FIXED FOOTER --- */
+        .nav-footer {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background-color: #2d3748;
+            border-top: 1px solid #4a5568;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow); color: black; font-weight: bold;
+            padding: 12px 20px; border-radius: 4px; flex: 1; max-width: 150px; text-align: center; user-select: none;
+        }
+        .btn-nav:active { background-color: #e6c200; transform: translateY(2px); }
+
+        .btn-exit {
+            position: fixed; top: 15px; right: 15px;
+            background-color: #4a5568; color: white; font-weight: bold;
+            padding: 8px 16px; border-radius: 4px; border: 1px solid #718096;
+            z-index: 1000; cursor: pointer; font-size: 0.9rem;
+        }
+        .btn-exit:hover { background-color: #2d3748; border-color: var(--safety-yellow); }
+
+        /* --- IMAGES & LIGHTBOX --- */
+        .img-box {
+            width: 100%; max-width: 600px; height: 350px;
+            background: #000; border: 2px solid #4a5568; border-radius: 8px;
+            overflow: hidden; margin: 1rem auto;
+            display: flex; justify-content: center; align-items: center;
+            cursor: zoom-in;
+        }
+        .img-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        #lightbox {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000;
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        #lightbox img { max-width: 95%; max-height: 80%; border: 2px solid var(--safety-yellow); border-radius: 4px; }
+        #lightbox-close { margin-top: 20px; padding: 10px 30px; background: var(--safety-yellow); color: black; font-weight: bold; border-radius: 50px; cursor: pointer; }
+
+        /* --- COMPONENTS --- */
+        .card {
+            background-color: #2d3748; border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 1rem; width: 100%;
+        }
+        .card-danger { border-left-color: #e53e3e; }
+        .card-info { border-left-color: #4299e1; }
+        .card-success { border-left-color: var(--accent-green); }
+
+        .quiz-btn { width: 100%; text-align: left; padding: 12px; margin-bottom: 8px; background-color: #4a5568; border-radius: 0.25rem; }
+        .correct { background-color: #48bb78 !important; }
+        .incorrect { background-color: #e53e3e !important; }
+
+        .formula-box {
+            background-color: #000; border: 1px solid #4a5568; padding: 1rem;
+            font-family: 'Courier New', Courier, monospace; color: var(--accent-green);
+            text-align: center; font-size: 1.5rem; border-radius: 0.5rem; margin: 1rem 0;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.9rem; }
+        th, td { border: 1px solid #4a5568; padding: 0.5rem; text-align: left; }
+        th { background-color: #232d3f; color: var(--safety-yellow); }
+
+        @media (max-width: 640px) { .img-box { height: 200px; } }
+    </style>
+</head>
+<body>
+
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+    <button onclick="saveAndExit()" class="btn-exit"><i class="fas fa-save mr-2"></i> Exit</button>
+
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Zoomed Image">
+        <button id="lightbox-close">Close View</button>
+    </div>
+
+    <div class="content-area">
+
+        <div class="slide active" id="slide-1">
+            <div class="max-w-5xl mx-auto text-center">
+                <p class="text-yellow-400 text-xl mb-2 tracking-widest brand-font">Phase 2 Electrical Instrumentation</p>
+                <h1 class="text-5xl md:text-6xl font-bold mb-6">Unit 9: Installation Testing</h1>
+                <div class="w-32 h-2 bg-yellow-400 mx-auto mb-8"></div>
+                <p class="text-xl text-gray-300">Verification, Testing, and Certification</p>
+                <div id="resume-prompt" class="hidden mt-8 bg-gray-800 p-6 rounded border border-green-500 inline-block">
+                    <p class="text-lg mb-4">Resume previous session?</p>
+                    <div class="flex gap-4 justify-center">
+                        <button onclick="resumeSession()" class="px-4 py-2 bg-green-600 rounded font-bold">Resume</button>
+                        <button onclick="clearSession()" class="px-4 py-2 bg-gray-600 rounded">Start Over</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-2">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-3xl text-yellow-400 mb-6">Introduction & Certification</h2>
+                <div class="bg-gray-800 p-6 rounded border-l-4 border-blue-500 mb-6">
+                    <p class="text-gray-300 mb-4">New installations must be inspected and tested to ensure compliance with <strong>NSAI National Rules</strong>.</p>
+                    <p class="text-gray-300">Tests must be carried out by competent persons in a specific sequence.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="font-bold text-yellow-400 mb-2">Certification</h3>
+                        <p class="text-sm text-gray-300">The <strong>CRU</strong> (Commission for Regulation of Utilities) oversees the process. <strong>Safe Electric</strong> issues certificates.</p>
+                    </div>
+                    <div class="card card-info">
+                        <h3 class="font-bold text-blue-400 mb-2">Phase 2 Scope</h3>
+                        <p class="text-sm text-gray-300">Only <strong>Pre-connection tests</strong> will be carried out in Phase 2.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-3">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Visual Inspection</h2>
+                    <p class="text-gray-300 mb-4">Must be done <strong>before</strong> testing and before making live.</p>
+                    <div class="bg-gray-800 p-6 rounded border border-blue-500 text-sm">
+                        <h3 class="font-bold text-blue-400 mb-2">Checklist</h3>
+                        <ul class="list-disc pl-5 text-gray-300 space-y-1">
+                            <li>Correct cable type and current rating.</li>
+                            <li>Conductors identified correctly (Brown/Blue).</li>
+                            <li>No damage to cables/enclosures.</li>
+                            <li>Terminations tight and mechanically sound.</li>
+                            <li>Fire barriers in trunking.</li>
+                            <li>Bonding complete.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/Electrical-Inspection.png')">
+                    <img src="images/testing/Electrical-Inspection.png" alt="Visual Inspection Checklist">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-4">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">The Sequence of Testing</h2>
+                <div class="flex flex-col md:flex-row justify-center gap-8 mb-8">
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-2xl font-bold text-red-400 mb-4 border-b border-red-500">1. DEAD TESTS (No Supply)</h3>
+                        <ol class="list-decimal pl-5 space-y-3 text-lg text-gray-300">
+                            <li>Continuity of Conductors.</li>
+                            <li>Insulation Resistance.</li>
+                            <li>Erroneous Connections.</li>
+                            <li>Polarity Test (Dead Method).</li>
+                        </ol>
+                    </div>
+                    <div class="w-full md:w-1/2">
+                        <h3 class="text-2xl font-bold text-green-400 mb-4 border-b border-green-500">2. LIVE TESTS (Supply On)</h3>
+                        <ol class="list-decimal pl-5 space-y-3 text-lg text-gray-300" start="5">
+                            <li>Fault Loop Impedance (Zs).</li>
+                            <li>RCD Operation.</li>
+                            <li>Functional Tests.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-5">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Test Instruments</h2>
+                    <div class="space-y-4">
+                        <div class="card">
+                            <h3 class="font-bold">Low Reading Ohmmeter</h3>
+                            <p class="text-sm text-gray-300">For Continuity and Polarity. Must deliver <strong>> 0.2 Amps</strong>.</p>
+                        </div>
+                        <div class="card">
+                            <h3 class="font-bold">Insulation Resistance Tester</h3>
+                            <p class="text-sm text-gray-300">Uses <strong>500V DC</strong> to stress insulation.</p>
+                        </div>
+                        <div class="card card-info">
+                            <h3 class="font-bold">Pre-Use Checks</h3>
+                            <ul class="list-disc pl-5 text-sm text-gray-300">
+                                <li>Check Battery & Leads.</li>
+                                <li><strong>Null/Zero</strong> the leads.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/test_instruments.png')">
+                    <img src="images/testing/test_instruments.png" alt="Test Instruments">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-6">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Continuity: Rp + Re Method</h2>
+                    <p class="text-gray-300 mb-4">Verifies integrity of Protective Conductors (CPC).</p>
+                    <div class="card card-info">
+                        <h3 class="font-bold mb-2">Procedure</h3>
+                        <ol class="list-decimal pl-5 text-sm text-gray-300 space-y-2">
+                            <li>Connect Phase to Earth at the DB.</li>
+                            <li>Zero test leads.</li>
+                            <li>Measure resistance at each outlet.</li>
+                            <li>Record the <strong>highest</strong> reading.</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/Rp Re Method.png')">
+                    <img src="images/testing/Rp Re Method.png" alt="Rp Re Method">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-7">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Continuity: Re Method</h2>
+                    <p class="text-gray-300 mb-4">Uses a long <strong>wander lead</strong>. Ideal for bonding conductors.</p>
+                    <div class="card">
+                        <h3 class="font-bold mb-2">Procedure</h3>
+                        <ol class="list-decimal pl-5 text-sm text-gray-300 space-y-2">
+                            <li>Null wander lead.</li>
+                            <li>Connect to MET at board.</li>
+                            <li>Probe outlet Earth.</li>
+                            <li>Record highest reading.</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/ringCont.png')">
+                    <img src="images/testing/ringCont.png" alt="Re Method">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-8">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Bonding Requirements</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card card-info">
+                        <h3 class="text-xl font-bold mb-2">Main Bonding</h3>
+                        <p class="text-gray-300 mb-2">Connects Gas, Water, Oil to MET.</p>
+                        <p class="text-sm text-gray-400"><strong>Note:</strong> Disconnect one end first to ensure no parallel paths.</p>
+                    </div>
+                    <div class="card card-info">
+                        <h3 class="text-xl font-bold mb-2">Supplementary Bonding</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-300">
+                            <li><strong>Bathroom:</strong> Radiators, pipes, metal baths.</li>
+                            <li><strong>Kitchen:</strong> Sinks, hot/cold pipes.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-9">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Ring Circuit Step 1</h2>
+                    <p class="text-gray-300 mb-4">Verifies end-to-end continuity.</p>
+                    <div class="bg-gray-800 p-6 rounded border border-yellow-500">
+                        <h3 class="font-bold text-yellow-400 mb-2">Procedure</h3>
+                        <ul class="list-disc pl-5 text-gray-300 text-sm space-y-2">
+                            <li>Separate all conductors at DB.</li>
+                            <li>Measure L-L, N-N, and E-E loops.</li>
+                            <li>Difference should be no more than <strong>0.05Ω</strong>.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/ringCont.png')">
+                    <img src="images/testing/ringCont.png" alt="Ring Test">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-10">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Insulation Resistance (6.4.3.3)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-gray-800 p-6 rounded">
+                        <h3 class="text-xl font-bold mb-4">Purpose & Prep</h3>
+                        <ul class="list-disc pl-5 text-gray-300 text-sm space-y-2">
+                            <li>Disconnect electronic appliances.</li>
+                            <li>Close all switches.</li>
+                            <li>Disconnect Surge Protection Devices (SPDs).</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-900 p-4 rounded border border-gray-600 text-center">
+                        <h3 class="text-xl font-bold mb-4 text-green-400">Min Values</h3>
+                        <table class="w-full text-sm text-gray-300">
+                            <thead><tr><th>Voltage</th><th>Test V</th><th>Min Res</th></tr></thead>
+                            <tbody>
+                                <tr><td>SELV</td><td>250V</td><td>0.5 MΩ</td></tr>
+                                <tr><td>Up to 500V</td><td>500V</td><td>1.0 MΩ</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-11">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">P & N to Earth</h2>
+                    <div class="card">
+                        <h3 class="font-bold mb-2">Procedure</h3>
+                        <ol class="list-decimal pl-5 text-sm text-gray-300 space-y-2">
+                            <li>Link Phase and Neutral together at DB.</li>
+                            <li>Switch ON all MCBs.</li>
+                            <li>Test between Earth terminal and the P/N link.</li>
+                            <li><strong>Voltage:</strong> 500V DC.</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/PNtoE.png')">
+                    <img src="images/testing/PNtoE.png" alt="IR Test P&N to E">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-12">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Phase to Neutral</h2>
+                    <div class="card card-danger">
+                        <h3 class="font-bold mb-2">Warning</h3>
+                        <p class="text-sm text-gray-300">Ensure ALL loads are removed. High voltage damages equipment.</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded mt-4">
+                        <h3 class="font-bold mb-2">Procedure</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-300">
+                            <li>Set tester to 500V.</li>
+                            <li>Switch on MCBs.</li>
+                            <li>Test between Phase busbar and Neutral terminal.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/PhaseToNeutral.png')">
+                    <img src="images/testing/PhaseToNeutral.png" alt="IR Test P to N">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-13">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Erroneous Connections</h2>
+                <div class="bg-gray-800 p-8 rounded border-l-8 border-yellow-500">
+                    <h3 class="text-2xl font-bold mb-4">The Test</h3>
+                    <ol class="list-decimal pl-5 text-lg text-gray-300 space-y-3">
+                        <li>Disconnect all loads.</li>
+                        <li>Switch <strong>OFF</strong> the MCB of the circuit you are testing.</li>
+                        <li>Switch <strong>ON</strong> all other MCBs.</li>
+                        <li>Measure IR (500V) between Phase of disconnected circuit and Busbar.</li>
+                    </ol>
+                    <p class="mt-6 text-xl text-red-400 font-bold">Result: A low reading indicates a cross-connection.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-14">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Polarity Test (6.4.3.6)</h2>
+                    <p class="text-gray-300 mb-4">Ensures Phase is connected to fuses/switches and ES centre contacts.</p>
+                    <div class="card">
+                        <h3 class="font-bold mb-2">Procedure</h3>
+                        <ul class="list-disc pl-5 text-sm text-gray-300 space-y-2">
+                            <li>Link Phase and Earth at DB.</li>
+                            <li>Check outlet Phase to Earth: <strong>Low Resistance</strong>.</li>
+                            <li>Check outlet Neutral to Earth: <strong>Infinity</strong>.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/polarity.png')">
+                    <img src="images/testing/polarity.png" alt="Polarity Test">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-15">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 1</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">1. Min Insulation Resistance for 230V?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">0.5 MΩ</button>
+                        <button onclick="check(this, true)" class="quiz-btn">1.0 MΩ</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">2. Difference allowed in Ring Circuit Step 1?</p>
+                        <button onclick="check(this, true)" class="quiz-btn">0.05 Ω</button>
+                        <button onclick="check(this, false)" class="quiz-btn">0.5 Ω</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-16">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-5xl text-red-500 mb-6"><i class="fas fa-bolt"></i> Live Testing</h2>
+                <div class="grid grid-cols-2 gap-8 text-left">
+                    <div class="card card-danger">
+                        <h3 class="text-xl font-bold mb-2">Hazards</h3>
+                        <ul class="list-disc pl-5 text-gray-300 text-sm">
+                            <li>Contact with live parts.</li>
+                            <li>Short circuits by probes.</li>
+                            <li>Faulty leads.</li>
+                        </ul>
+                    </div>
+                    <div class="card card-info">
+                        <h3 class="text-xl font-bold mb-2">Tests</h3>
+                        <ul class="list-disc pl-5 text-gray-300 text-sm">
+                            <li>Fault Loop Impedance.</li>
+                            <li>RCD Verification.</li>
+                            <li>Phase Sequence.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-17">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Fault Loop Impedance (Zs)</h2>
+                    <p class="text-gray-300 mb-4 text-sm">Ensures fault current is high enough to trip MCB.</p>
+                    <div class="formula-box text-lg mb-4">(Rp + Re) + Ze = Zs</div>
+                    <p class="text-sm text-gray-400">Tested at the furthest outlet of each circuit.</p>
+                </div>
+                <div class="img-box" onclick="openLightbox('images/testing/Fault Loop.png')">
+                    <img src="images/testing/Fault Loop.png" alt="Fault Loop">
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-18">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Max Zs Values (Table 41.2)</h2>
+                <div class="bg-gray-800 p-4 rounded mb-6 overflow-x-auto">
+                    <table class="w-full text-center text-sm text-gray-300">
+                        <tr class="bg-gray-700 text-yellow-400"><th class="p-2">Type</th><th>20A</th><th>32A</th><th>40A</th></tr>
+                        <tr><td class="font-bold">B</td><td>2.3Ω</td><td>1.44Ω</td><td>1.15Ω</td></tr>
+                        <tr><td class="font-bold">C</td><td>1.15Ω</td><td>0.72Ω</td><td>0.57Ω</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-19">
+            <div class="max-w-5xl mx-auto w-full grid grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Temp Correction</h2>
+                    <div class="formula-box text-sm">Limit = 2/3 x Table Value</div>
+                    <div class="img-box h-32 mt-4 bg-white">
+                         <img src="images/testing/Temp Coeff.png" alt="Temp Coeff">
+                    </div>
+                </div>
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Disconnection Times</h2>
+                    <div class="card card-info">
+                        <ul class="list-disc pl-5 text-gray-300">
+                            <li><strong>≤ 32A:</strong> 0.4 Seconds (Sockets).</li>
+                            <li><strong>> 32A:</strong> 5 Seconds (Distribution).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-20">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">RCD Verification</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-gray-300">
+                        <thead>
+                            <tr class="bg-gray-700 text-yellow-400">
+                                <th class="p-3">Current</th>
+                                <th class="p-3">Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="p-3 font-bold">0.5x I∆n</td><td class="text-green-400">No Trip</td></tr>
+                            <tr><td class="p-3 font-bold">1x I∆n</td><td class="text-green-400">Trip < 300ms</td></tr>
+                            <tr><td class="p-3 font-bold">5x I∆n</td><td class="text-green-400">Trip < 40ms</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-21">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-4xl text-yellow-400 mb-6">Voltage Drop</h2>
+                <div class="bg-gray-800 p-8 rounded border border-red-500 inline-block">
+                    <p class="text-xl text-gray-300 mb-4">Max permissible drop:</p>
+                    <div class="text-6xl font-bold text-white mb-2">4%</div>
+                    <hr class="border-gray-600 my-6">
+                    <p class="text-2xl">4% of 230V = <span class="text-yellow-400 font-bold">9.2 Volts</span>.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-22">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Certification</h2>
+                <div class="bg-gray-800 p-8 rounded border border-gray-600">
+                    <h3 class="text-2xl font-bold mb-4">Required Documents</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm text-gray-400">
+                        <div class="p-4 bg-gray-900 rounded">
+                            <strong>Completion Certificate:</strong> Issued by Safe Electric.
+                        </div>
+                        <div class="p-4 bg-gray-900 rounded">
+                            <strong>Test Record Sheet:</strong> Numerical results of all tests.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-23">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Periodic Inspection</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-sm text-gray-300">
+                        <thead><tr class="bg-gray-700 text-yellow-400"><th>Location</th><th>Visual</th><th>Full Test</th></tr></thead>
+                        <tbody>
+                            <tr><td>Commercial</td><td>1 Year</td><td>5 Years</td></tr>
+                            <tr class="bg-gray-800"><td>Industrial</td><td>1 Year</td><td>3 Years</td></tr>
+                            <tr><td>Domestic (Rental)</td><td>1 Year</td><td>5 Years</td></tr>
+                            <tr class="bg-gray-800"><td>Construction</td><td>3 Months</td><td>6 Months</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-24">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Final Knowledge Check</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">1. Max trip time for 5x I∆n?</p>
+                        <button onclick="check(this, true)" class="quiz-btn">40 ms</button>
+                        <button onclick="check(this, false)" class="quiz-btn">300 ms</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">2. Inspection interval for Industrial?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">5 Years</button>
+                        <button onclick="check(this, true)" class="quiz-btn">3 Years</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">3. Max Voltage Drop (230V)?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">5 V</button>
+                        <button onclick="check(this, true)" class="quiz-btn">9.2 V</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide" id="slide-25">
+            <div class="text-center">
+                <h1 class="text-5xl text-yellow-400 mb-4">Unit 9 Complete</h1>
+                <p class="text-xl text-gray-400 mb-8">Installation Testing & Verification</p>
+                <div class="mt-8">
+                    <button onclick="saveAndExit()" class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded text-xl font-bold transition">Finish & Exit</button>
+                    <button onclick="goToSlide(1)" class="px-8 py-4 bg-gray-700 hover:bg-gray-600 rounded text-xl font-bold transition ml-4">Restart</button>
+                </div>
+            </div>
+        </div>
+
+    </div> <div class="nav-footer">
+        <button onclick="prevSlide()" class="btn-nav">PREV</button>
+        <span class="text-gray-400 font-bold text-sm"><span id="page-indicator">1</span> / 25</span>
+        <button onclick="nextSlide()" class="btn-nav">NEXT</button>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const UNIT_ID = 'unit9'; // Matches Installation_Techniques_Hub.html
+        const HUB_PAGE = 'Installation_Techniques_Hub.html'; 
+        const TOTAL_SLIDES = 25; 
+
+        let currentSlide = 1;
+
+        function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
+        function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem(UNIT_ID + '_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+                document.getElementById('saved-slide-num').innerText = savedSlide;
+            }
+            updateUI();
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.querySelector('.content-area').scrollTop = 0;
+        }
+
+        function nextSlide() { if(currentSlide < TOTAL_SLIDES) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+        function goToSlide(n) { currentSlide = n; updateUI(); }
+
+        function saveAndExit() {
+            localStorage.setItem(UNIT_ID + '_slide', currentSlide);
+            if(currentSlide === TOTAL_SLIDES) localStorage.setItem(UNIT_ID, 'completed');
+            window.location.href = HUB_PAGE;
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem(UNIT_ID + '_slide');
+            if(saved) { currentSlide = parseInt(saved); document.getElementById('resume-prompt').classList.add('hidden'); updateUI(); }
+        }
+
+        function clearSession() {
+            localStorage.removeItem(UNIT_ID + '_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => { b.classList.remove('correct', 'incorrect'); b.style.opacity = '0.5'; });
+            btn.style.opacity = '1';
+            if(isCorrect) btn.classList.add('correct'); else btn.classList.add('incorrect');
+        }
+    </script>
+</body>
+</html>

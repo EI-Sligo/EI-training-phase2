@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 8: Multicore Cables & Cable Tray (In-Depth)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --safety-yellow: #FFD700;
+            --industrial-grey: #1a202c;
+            --steel-blue: #4a5568;
+            --accent-red: #e53e3e;
+            --accent-green: #48bb78;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--industrial-grey);
+            color: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* --- SCROLLABLE CONTENT AREA --- */
+        .content-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 100px;
+            padding-top: 20px;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        .slide {
+            display: none;
+            padding: 2rem 4rem;
+            flex-direction: column;
+            justify-content: flex-start; /* Aligns content to top for better scrolling on mobile */
+            align-items: center; /* Center horizontally */
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100%;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        .slide.centered {
+            justify-content: center; /* Center vertically if explicitly requested */
+        }
+
+        /* --- FIXED FOOTER NAVIGATION --- */
+        .nav-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #2d3748;
+            border-top: 1px solid #4a5568;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-nav {
+            background-color: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 4px;
+            flex: 1;
+            max-width: 150px;
+            text-align: center;
+            user-select: none;
+            cursor: pointer;
+        }
+        .btn-nav:active { background-color: #e6c200; transform: translateY(2px); }
+
+        .progress-text {
+            color: #a0aec0;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.1rem;
+        }
+
+        /* --- TOP RIGHT EXIT BUTTON --- */
+        .btn-exit {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background-color: #4a5568;
+            color: white;
+            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: 1px solid #718096;
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-exit:hover { background-color: #2d3748; border-color: var(--safety-yellow); }
+
+        .card {
+            background-color: #2d3748;
+            border-left: 4px solid var(--safety-yellow);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .card-danger { border-left-color: var(--accent-red); }
+        .card-info { border-left-color: #4299e1; }
+        .card-success { border-left-color: var(--accent-green); }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #FFD700 10px, #FFD700 20px);
+            height: 10px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 50;
+        }
+
+        /* --- IMAGES & LIGHTBOX --- */
+        .img-box {
+            height: 300px; /* Standard height */
+            max-width: 600px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 2px solid var(--steel-blue);
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1rem auto;
+            cursor: zoom-in;
+        }
+        
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+        }
+
+        /* Lightbox Overlay */
+        #lightbox {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #lightbox img {
+            max-width: 95%;
+            max-height: 80%;
+            border: 2px solid var(--safety-yellow);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        #lightbox-close {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: var(--safety-yellow);
+            color: black;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        .quiz-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: var(--steel-blue);
+            border-radius: 0.25rem;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+        }
+        .quiz-btn:hover {
+            background-color: #718096;
+        }
+        .correct { background-color: var(--accent-green) !important; color: white;}
+        .incorrect { background-color: var(--accent-red) !important; color: white;}
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #1a202c; }
+        ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #718096; }
+
+        .definition-term {
+            color: var(--safety-yellow);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .formula-box {
+            background-color: #000;
+            border: 1px solid #4a5568;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--accent-green);
+            text-align: center;
+            font-size: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP BAR -->
+    <div class="hazard-stripe fixed top-0 z-50"></div>
+    <button onclick="saveAndExit()" class="btn-exit"><i class="fas fa-save mr-2"></i> Exit</button>
+
+    <!-- 2. LIGHTBOX (Hidden by default) -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Zoomed Image">
+        <button id="lightbox-close">Close View</button>
+    </div>
+
+    <!-- 3. SCROLLABLE CONTENT -->
+    <div class="content-area">
+
+        <!-- SLIDE 1: Title -->
+        <div class="slide active centered" id="slide-1">
+            <div class="max-w-5xl mx-auto text-center">
+                <div class="text-yellow-400 text-xl mb-4 tracking-widest brand-font">Phase 2 Electrical Instrumentation</div>
+                <h1 class="text-6xl font-bold mb-6 leading-tight">Unit 8: Multicore Cables & Cable Tray</h1>
+                <div class="w-32 h-2 bg-yellow-400 mx-auto mb-8"></div>
+                <p class="text-2xl text-gray-300 font-light">In-Depth: SWA, NYM-J, Fibre Optics, Tray Systems & Electrical Science</p>
+
+                <div id="resume-prompt" class="hidden mt-12 bg-gray-800 p-6 rounded border border-green-500 inline-block text-left shadow-lg">
+                    <p class="text-lg mb-4 text-white"><i class="fas fa-history text-green-400 mr-2"></i> Resume previous session?</p>
+                    <div class="flex gap-4">
+                        <button onclick="resumeSession()" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded font-bold transition text-white">
+                            Resume from Slide <span id="saved-slide-num"></span>
+                        </button>
+                        <button onclick="clearSession()" class="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded transition text-white">
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: Learning Outcomes -->
+        <div class="slide centered" id="slide-2">
+            <div class="max-w-6xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-8 border-b border-gray-700 pb-2">Learning Outcomes</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card">
+                        <span class="definition-term">Installation & Termination</span>
+                        <ul class="list-disc pl-5 mt-2 text-gray-300 space-y-2">
+                            <li>NYM-J Cables</li>
+                            <li>SWA (Steel Wire Armoured) Cables</li>
+                            <li>Field Instrument Type Cables</li>
+                            <li>Fibre Optic Cables</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <span class="definition-term">Electrical Science Principles</span>
+                        <ul class="list-disc pl-5 mt-2 text-gray-300 space-y-2">
+                            <li>Resistivity & Resistance Calculations</li>
+                            <li>Temperature Coefficient of Resistance</li>
+                            <li>Voltage Drop & Current Rating Factors</li>
+                            <li>Power Loss (I²R)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Cable Types Overview -->
+        <div class="slide centered" id="slide-3">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-6">Cable Types</h2>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-800 rounded border-l-4 border-blue-500">
+                            <h3 class="font-bold text-blue-400">NYM-J</h3>
+                            <p class="text-sm text-gray-400">PVC sheathed, insulated cable used for industrial/domestic surface wiring. Similar to "Hi-Tuff". Not armoured.</p>
+                        </div>
+                        <div class="p-4 bg-gray-800 rounded border-l-4 border-yellow-500">
+                            <h3 class="font-bold text-yellow-400">SWA (Steel Wire Armoured)</h3>
+                            <p class="text-sm text-gray-400">Heavy duty. Galvanised steel wires provide mechanical protection and earth continuity.</p>
+                        </div>
+                        <div class="p-4 bg-gray-800 rounded border-l-4 border-green-500">
+                            <h3 class="font-bold text-green-400">Field Instrument Cable</h3>
+                            <p class="text-sm text-gray-400">Twisted pairs (often screened) for carrying low voltage signals (4-20mA) and preventing interference.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/multicore/1.png')">
+                    <img src="images/multicore/1.png" alt="Cable Types Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: SWA Construction Detail -->
+        <div class="slide centered" id="slide-4">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-6">SWA Construction</h2>
+                    <p class="text-gray-300 mb-4">Essential for underground or hazardous area installation.</p>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center"><span class="bg-gray-700 px-2 rounded mr-2">1</span> <strong>Conductor:</strong> Plain Stranded Copper.</li>
+                        <li class="flex items-center"><span class="bg-blue-900 px-2 rounded mr-2">2</span> <strong>Insulation:</strong> XLPE (Cross-linked Polyethylene) or PVC.</li>
+                        <li class="flex items-center"><span class="bg-gray-600 px-2 rounded mr-2">3</span> <strong>Bedding:</strong> PVC layer cushioning the insulation.</li>
+                        <li class="flex items-center"><span class="bg-yellow-700 px-2 rounded mr-2">4</span> <strong>Armour:</strong> Steel Wires (Mechanical & Earth).</li>
+                        <li class="flex items-center"><span class="bg-black px-2 rounded mr-2 border border-gray-500">5</span> <strong>Sheath:</strong> Black PVC (UV Resistant).</li>
+                    </ul>
+                    <div class="mt-4 p-3 bg-red-900/30 border border-red-500 rounded">
+                        <strong>Quiz Tip:</strong> SWA is one of the few cables permitted to be buried directly in the ground (Min depth 600mm).
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/multicore/2.png')">
+                    <img src="images/multicore/2.png" alt="SWA Layers Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: Termination & Glands -->
+        <div class="slide centered" id="slide-5">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-6">SWA Termination</h2>
+                    <div class="bg-gray-800 p-6 rounded mb-4">
+                        <h3 class="text-xl font-bold mb-2">Cable Glands</h3>
+                        <ul class="list-disc pl-5 text-gray-300 space-y-2">
+                            <li><strong>BW Gland (Indoor):</strong> Clamps armour only. Two-part design.</li>
+                            <li><strong>CW Gland (Outdoor):</strong> Clamps armour AND seals outer sheath (Waterproof). Three-part design.</li>
+                        </ul>
+                    </div>
+                    <div class="card card-info">
+                        <h3 class="text-xl font-bold mb-2 text-blue-300">The "Banjo" (Earth Tag)</h3>
+                        <p class="text-gray-300">Must be used to ensure earth continuity between the armour and the enclosure. The "fly-lead" connects the tag to the earth terminal.</p>
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/multicore/3.png')">
+                    <img src="images/multicore/3.png" alt="Gland Types Diagram">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: Cable Tray Systems -->
+        <div class="slide centered" id="slide-6">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Cable Tray Systems</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="bg-gray-800 p-6 rounded text-center">
+                        <i class="fas fa-grip-lines text-4xl text-gray-400 mb-4"></i>
+                        <h3 class="text-xl font-bold">Perforated Tray</h3>
+                        <p class="text-sm text-gray-400 mt-2">Standard duty. Holes allow ventilation and cable tying.</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded text-center">
+                        <i class="fas fa-stream text-4xl text-yellow-500 mb-4"></i>
+                        <h3 class="text-xl font-bold">Ladder Tray</h3>
+                        <p class="text-sm text-gray-400 mt-2">Heavy duty. Used for large power cables over long spans.</p>
+                    </div>
+                    <div class="bg-gray-800 p-6 rounded text-center">
+                        <i class="fas fa-border-all text-4xl text-blue-500 mb-4"></i>
+                        <h3 class="text-xl font-bold">Basket (Mesh)</h3>
+                        <p class="text-sm text-gray-400 mt-2">Lightweight. Easy to shape/bend on site. Good for data/instrumentation.</p>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-red-900/30 border border-red-500 rounded text-center">
+                    <strong>Segregation:</strong> Band I (Data) and Band II (Mains) cables must be segregated (separated) on trays to prevent interference.             </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: Knowledge Check 1 -->
+        <div class="slide centered" id="slide-7">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 1</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">1. Minimum burial depth for SWA (Industrial)?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">450mm</button>
+                        <button onclick="check(this, true)" class="quiz-btn">600mm</button>
+                        <button onclick="check(this, false)" class="quiz-btn">1000mm</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">2. What measures outer diameter of a drill bit/cable?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Voltmeter</button>
+                        <button onclick="check(this, false)" class="quiz-btn">Tape Measure</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Micrometre</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">3. Why ream steel conduit ends?</p>
+                        <button onclick="check(this, true)" class="quiz-btn">Prevent damage to cable insulation</button>
+                        <button onclick="check(this, false)" class="quiz-btn">To make it look tidy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Resistivity & Resistance -->
+        <div class="slide centered" id="slide-8">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Resistance & Resistivity</h2>
+                    <p class="text-gray-300 mb-4">The resistance (R) of a conductor depends on:</p>
+                    <ul class="list-disc pl-5 text-gray-300 space-y-1">
+                        <li><strong>Length (l):</strong> Directly proportional (∝). Longer = Higher R.</li>
+                        <li><strong>Area (a):</strong> Inversely proportional (R ∝ 1/a). Thicker = Lower R.</li>
+                        <li><strong>Material (ρ):</strong> Resistivity (Rho). Copper is better than Aluminium.</li>
+                    </ul>
+                    <div class="formula-box">
+                        R = (ρ × l) / a
+                    </div>
+                    <p class="text-sm text-gray-400">Where ρ = Resistivity (Ωm), l = Length (m), a = Area (m²).</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded border border-yellow-500">
+                    <h3 class="text-xl font-bold mb-2 text-yellow-400">Practical Example</h3>
+                    <p class="text-gray-300 text-sm"><strong>Copper vs Aluminium:</strong><br>Copper and Aluminium should NOT be directly connected because they corrode when in contact (Galvanic corrosion).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: Temperature Coefficient -->
+        <div class="slide centered" id="slide-9">
+            <div class="max-w-5xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6">Temperature Coefficient</h2>
+                <div class="card card-info">
+                    <h3 class="text-xl font-bold mb-2">Effect of Heat</h3>
+                    <p class="text-gray-300">The resistance of a pure metal conductor <strong>increases</strong> as its temperature rises.</p>
+                    <p class="text-gray-300 mt-2">This is defined by the <strong>Temperature Coefficient of Resistance (α)</strong>.</p>
+                </div>
+                
+                <div class="formula-box">
+                    Rₜ = R₀ (1 + αt)
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 mt-6 text-sm text-gray-400 text-center">
+                    <div>Rt = Final Resistance</div>
+                    <div>R0 = Initial Resistance</div>
+                    <div>α = Temp Coeff</div>
+                    <div>t = Temp Rise</div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-gray-900 rounded text-center">
+                    <p><strong>Note:</strong> Cable rating tables in ETCI rules are typically based on an ambient temperature of <strong>30°C</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: Voltage Drop -->
+        <div class="slide centered" id="slide-10">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Voltage Drop</h2>
+                    <p class="text-gray-300 mb-4">Every cable has resistance. Current flowing through resistance causes a voltage drop (V = I x R).</p>
+                    
+                    <div class="bg-gray-800 p-4 rounded border-l-4 border-red-500 mb-4">
+                        <h3 class="font-bold text-red-400">Factors Affecting Volt Drop</h3>
+                        <ul class="list-disc pl-5 text-gray-300 text-sm">
+                            <li><strong>Length:</strong> Longer cable = More drop.</li>
+                            <li><strong>Load Current:</strong> Higher current = More drop.</li>
+                            <li><strong>Conductor CSA:</strong> Thinner cable = More drop.</li>
+                            <li><strong>Ambient Temp:</strong> Heat increases resistance.</li>
+                            <li><strong>Grouping:</strong> Bundling cables retains heat.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="p-4 bg-green-900/30 rounded border border-green-500">
+                        <strong>Solution:</strong> To reduce voltage drop, you must <span class="text-green-400 font-bold">Increase the CSA</span> of the cable.
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/multicore/4.png')">
+                    <img src="images/multicore/4.png" alt="Volt drop formula">
+            </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: Power Loss -->
+        <div class="slide centered" id="slide-11">
+            <div class="max-w-5xl mx-auto w-full text-center">
+                <h2 class="text-4xl text-yellow-400 mb-6">Power Loss (I²R)</h2>
+                <div class="bg-gray-800 p-8 rounded inline-block text-left">
+                    <p class="text-xl text-gray-300 mb-4">Current flowing through a cable generates heat. This is wasted power.</p>
+                    
+                    <div class="formula-box">
+                        P = I² × R
+                    </div>
+                    
+                    <p class="text-gray-400 mt-4"><strong>Example:</strong><br>If Current (I) doubles, the Power Loss (P) quadruples (because 2² = 4).</p>
+                    <hr class="border-gray-600 my-4">
+                    <p class="text-sm text-yellow-500"><strong>Eddy Currents:</strong> Another form of loss/heat caused by AC magnetic fields in ferrous (steel) conduit/trunking. Prevent by putting all phases in same conduit.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: Fibre Optic Cables -->
+        <div class="slide centered" id="slide-12">
+            <div class="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl text-yellow-400 mb-4">Fibre Optic Cables</h2>
+                    <p class="text-gray-300 mb-4">Uses light signals instead of electricity. Immune to Electromagnetic Interference (EMI).</p>
+                    <div class="space-y-3">
+                        <div class="card">
+                            <strong>Core:</strong> Glass or plastic centre where light travels.
+                        </div>
+                        <div class="card">
+                            <strong>Cladding:</strong> Reflective layer keeping light in the core.
+                        </div>
+                        <div class="card card-info">
+                            <strong>Safety:</strong> Never look into the end of a fibre cable (Laser hazard). Shards of glass fibre are dangerous to skin/eyes.
+                        </div>
+                    </div>
+                </div>
+                <div class="img-box bg-white" onclick="openLightbox('images/multicore/5.png')">
+                    <img src="images/multicore/5.png" alt="Fibre Optic Construction">
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: Knowledge Check 2 -->
+        <div class="slide centered" id="slide-13">
+            <div class="max-w-4xl mx-auto w-full">
+                <h2 class="text-4xl text-yellow-400 mb-6 text-center">Knowledge Check 2</h2>
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">1. How to reduce voltage drop in a cable?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Increase Length</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Increase Cross-Sectional Area (CSA)</button>
+                        <button onclick="check(this, false)" class="quiz-btn">Increase Insulation</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">2. Ambient temperature for cable ratings (ETCI)?</p>
+                        <button onclick="check(this, true)" class="quiz-btn">30°C</button>
+                        <button onclick="check(this, false)" class="quiz-btn">20°C</button>
+                        <button onclick="check(this, false)" class="quiz-btn">45°C</button>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded">
+                        <p class="font-bold mb-2">3. Resistance of a conductor depends on?</p>
+                        <button onclick="check(this, false)" class="quiz-btn">Insulation color</button>
+                        <button onclick="check(this, true)" class="quiz-btn">Length, Area, and Resistivity</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: Summary -->
+        <div class="slide centered" id="slide-14">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-5xl text-yellow-400 mb-8">Unit Complete</h2>
+                <div class="bg-gray-800 p-8 rounded border border-gray-600 text-lg text-left">
+                    <p class="mb-4">You have reviewed:</p>
+                    <ul class="space-y-3 text-gray-300">
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Cables:</strong> NYM-J, SWA, Fibre Optics.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Tray Work:</strong> Perforated, Ladder, Basket.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Calculations:</strong> R = ρl/a, Voltage Drop.</li>
+                        <li><i class="fas fa-check text-green-500 mr-3"></i> <strong>Regulations:</strong> Burial depth, Segregation, Glanding.</li>
+                    </ul>
+                </div>
+                <div class="mt-8">
+                    <button onclick="saveAndExit()" class="px-8 py-4 bg-green-600 hover:bg-green-500 rounded text-xl font-bold transition">Finish & Exit</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. FIXED FOOTER -->
+    <div class="nav-footer">
+        <button onclick="prevSlide()" class="btn-nav">PREV</button>
+        <span class="progress-text"><span id="page-indicator">1</span> / 14</span>
+        <button onclick="nextSlide()" class="btn-nav">NEXT</button>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const UNIT_ID = 'unit8_depth'; 
+        const HUB_PAGE = 'Installation_Techniques_Hub.html'; 
+        const TOTAL_SLIDES = 14;
+
+        let currentSlide = 1;
+
+        // --- LIGHTBOX LOGIC ---
+        function openLightbox(src) {
+            document.getElementById('lightbox-img').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+        }
+
+        // --- STANDARD LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedSlide = localStorage.getItem(UNIT_ID + '_slide');
+            if(savedSlide && parseInt(savedSlide) > 1) {
+                document.getElementById('resume-prompt').classList.remove('hidden');
+                document.getElementById('saved-slide-num').innerText = savedSlide;
+            }
+            updateUI();
+        });
+
+        function updateUI() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const slide = document.getElementById(`slide-${currentSlide}`);
+            if(slide) slide.classList.add('active');
+            
+            document.getElementById('page-indicator').innerText = currentSlide;
+            document.querySelector('.content-area').scrollTop = 0;
+        }
+
+        function nextSlide() { if(currentSlide < TOTAL_SLIDES) { currentSlide++; updateUI(); } }
+        function prevSlide() { if(currentSlide > 1) { currentSlide--; updateUI(); } }
+        function goToSlide(n) { currentSlide = n; updateUI(); }
+
+        function saveAndExit() {
+            localStorage.setItem(UNIT_ID + '_slide', currentSlide);
+            if(currentSlide === TOTAL_SLIDES) {
+                localStorage.setItem(UNIT_ID, 'completed');
+            }
+            window.location.href = HUB_PAGE;
+        }
+
+        function resumeSession() {
+            const saved = localStorage.getItem(UNIT_ID + '_slide');
+            if(saved) {
+                currentSlide = parseInt(saved);
+                document.getElementById('resume-prompt').classList.add('hidden');
+                updateUI();
+            }
+        }
+
+        function clearSession() {
+            localStorage.removeItem(UNIT_ID + '_slide');
+            document.getElementById('resume-prompt').classList.add('hidden');
+        }
+
+        function check(btn, isCorrect) {
+            const btns = btn.parentElement.querySelectorAll('.quiz-btn');
+            btns.forEach(b => { b.classList.remove('correct', 'incorrect'); b.style.opacity = '0.5'; });
+            btn.style.opacity = '1';
+            if(isCorrect) btn.classList.add('correct'); else btn.classList.add('incorrect');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === "ArrowRight") nextSlide();
+            if(e.key === "ArrowLeft") prevSlide();
+        });
+    </script>
+</body>
+</html>
