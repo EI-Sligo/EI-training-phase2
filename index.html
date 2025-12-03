@@ -93,24 +93,55 @@
         .module-num { background: var(--safety-yellow); color: black; font-weight: bold; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin-bottom: 10px; display: inline-block; }
 
         /* Admin Switches */
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; margin-right: 10px; }
+        .switch { position: relative; display: inline-block; width: 34px; height: 18px; margin-right: 10px; vertical-align: middle; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5568; transition: .4s; border-radius: 20px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success-green); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        input:checked + .slider:before { transform: translateX(16px); }
+
+        /* Accordion for Admin Units */
+        .unit-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: #1a202c; }
+        .unit-list.expanded { max-height: 1000px; transition: max-height 0.5s ease-in; }
     </style>
     <script>
         // Define Course Structure
         const COURSE_STRUCTURE = [
-            { id: 'module1', name: 'Module 1: Electricity', link: 'Electricity_Units/Electricity_Electronics_Hub.html', units: ['m1_u1','m1_u2','m1_u3','m1_u4','m1_u5','m1_u6','m1_u7','m1_u8','m1_u9','m1_u10','m1_u11','m1_u12'] },
-            { id: 'module2', name: 'Module 2: Installation', link: 'Installation_Units/Installation_Techniques_Hub.html', units: ['unit1','unit23','unit22','unit4','unit5_final','unit225_final','unit7','unit8_depth','unit9'] },
-            { id: 'module3', name: 'Module 3: Pressure', link: 'Pressure_Units/Pressure_Hub.html', units: ['m3_u1','m3_u2','m3_u3','m3_u4','m3_u5','m3_u6','m3_u7','m3_u8'] },
-            { id: 'module4', name: 'Module 4: Flow', link: 'Flow_Units/Flow_Hub.html', units: ['m4_u1','m4_u2','m4_u3','m4_u4','m4_u5','m4_u6'] },
-            { id: 'module5', name: 'Module 5: Level', link: 'Level_Units/Level_Hub.html', units: ['m5_u1','m5_u2','m5_u3','m5_u4','m5_u5','m5_u6','m5_u7'] },
-            { id: 'module6', name: 'Module 6: Temperature', link: 'Temperature_Units/Temperature_Hub.html', units: ['m6_u1','m6_u2','m6_u3','m6_u4','m6_u5','m6_u6','m6_u7'] },
-            { id: 'module7', name: 'Module 7: Control', link: 'Control_Units/Control_Hub.html', units: ['m7_u1','m7_u2','m7_u3','m7_u4','m7_u5','m7_u6'] },
-            { id: 'module8', name: 'Knowledge Check', link: 'Knowledge_Units/Knowledge_Hub.html', units: ['kc_t1','kc_t2','kc_t3'] }
+            { id: 'module1', name: 'Module 1: Electricity', link: 'Electricity_Units/Electricity_Electronics_Hub.html', units: [
+                {id: 'm1_u1', name: "Intro to Electricity"}, {id: 'm1_u2', name: "Resistance Networks"}, {id: 'm1_u3', name: "Power and Energy"}, 
+                {id: 'm1_u4', name: "Magnetism"}, {id: 'm1_u5', name: "Capacitance"}, {id: 'm1_u6', name: "AC Theory"}, 
+                {id: 'm1_u7', name: "Transformers"}, {id: 'm1_u8', name: "Soldering"}, {id: 'm1_u9', name: "Semiconductors"},
+                {id: 'm1_u10', name: "Rectification"}, {id: 'm1_u11', name: "Logic"}, {id: 'm1_u12', name: "Transistors"}
+            ]},
+            { id: 'module2', name: 'Module 2: Installation', link: 'Installation_Units/Installation_Techniques_Hub.html', units: [
+                {id: 'unit1', name: "Basic Engineering"}, {id: 'unit23', name: "Conduit & Trunking"}, {id: 'unit22', name: "Cables"},
+                {id: 'unit4', name: "Lighting"}, {id: 'unit5_final', name: "Protective Devices"}, {id: 'unit225_final', name: "Fixed Appliances"},
+                {id: 'unit7', name: "Earthing"}, {id: 'unit8_depth', name: "Multicore Cables"}, {id: 'unit9', name: "Testing"}
+            ]},
+            { id: 'module3', name: 'Module 3: Pressure', link: 'Pressure_Units/Pressure_Hub.html', units: [
+                {id: 'm3_u1', name: "Pressure Measurement"}, {id: 'm3_u2', name: "Manometers"}, {id: 'm3_u3', name: "Elastic Elements"},
+                {id: 'm3_u4', name: "Calibration"}, {id: 'm3_u5', name: "Pressure Switch"}, {id: 'm3_u6', name: "Pneumatic Trans"},
+                {id: 'm3_u7', name: "Electronic Trans"}, {id: 'm3_u8', name: "Test Equipment"}
+            ]},
+            { id: 'module4', name: 'Module 4: Flow', link: 'Flow_Units/Flow_Hub.html', units: [
+                {id: 'm4_u1', name: "Intro to Flow"}, {id: 'm4_u2', name: "Orifice Plates"}, {id: 'm4_u3', name: "DP Measurement"},
+                {id: 'm4_u4', name: "Turbine Meters"}, {id: 'm4_u5', name: "Variable Area"}, {id: 'm4_u6', name: "Vortex"}
+            ]},
+            { id: 'module5', name: 'Module 5: Level', link: 'Level_Units/Level_Hub.html', units: [
+                {id: 'm5_u1', name: "Direct Method"}, {id: 'm5_u2', name: "Gas Purge"}, {id: 'm5_u3', name: "Open Tank DP"},
+                {id: 'm5_u4', name: "Closed Tank DP"}, {id: 'm5_u5', name: "Radar Level"}, {id: 'm5_u6', name: "Switches"}, {id: 'm5_u7', name: "Indicators"}
+            ]},
+            { id: 'module6', name: 'Module 6: Temperature', link: 'Temperature_Units/Temperature_Hub.html', units: [
+                {id: 'm6_u1', name: "Intro to Temp"}, {id: 'm6_u2', name: "Sim/Measure"}, {id: 'm6_u3', name: "Indicators"},
+                {id: 'm6_u4', name: "Resistance Therm"}, {id: 'm6_u5', name: "Wheatstone"}, {id: 'm6_u6', name: "Thermocouples"}, {id: 'm6_u7', name: "Transmitter"}
+            ]},
+            { id: 'module7', name: 'Module 7: Control', link: 'Control_Units/Control_Hub.html', units: [
+                {id: 'm7_u1', name: "Loops"}, {id: 'm7_u2', name: "Valves"}, {id: 'm7_u3', name: "Converters"},
+                {id: 'm7_u4', name: "Electric Valves"}, {id: 'm7_u5', name: "Two-Step"}, {id: 'm7_u6', name: "Proportional"}
+            ]},
+            { id: 'module8', name: 'Knowledge Check', link: 'Knowledge_Units/Knowledge_Hub.html', units: [
+                {id: 'kc_t1', name: "T1 Exam"}, {id: 'kc_t2', name: "T2 Exam"}, {id: 'kc_t3', name: "T3 Exam"}
+            ]}
         ];
 
         let classes = [];
@@ -120,21 +151,13 @@
             
             // 1. CHECK IF CONFIG.JS LOADED
             if (typeof CONFIG_CLASSES === 'undefined') {
-                console.warn("config.js not loaded or has syntax errors. Falling back to defaults.");
-                // Fallback defaults if file breaks
-                classes = [
-                    { id: "EI2025", name: "Fallback Class", password: "class2025", expiryDate: "2025-12-31" }
-                ];
-                // Optional: Alert the admin
-                // alert("Warning: config.js not found or has errors. Using default settings.");
+                console.warn("config.js not loaded. Defaults used.");
+                classes = [{ id: "EI2025", name: "Default Class", password: "class2025", expiryDate: "2025-12-31" }];
             } else {
-                // Load from config.js
                 classes = CONFIG_CLASSES;
-                // Merge Permissions
                 permissions = { ...CONFIG_PERMISSIONS, ...(typeof CONFIG_UNIT_PERMISSIONS !== 'undefined' ? CONFIG_UNIT_PERMISSIONS : {}) };
             }
             
-            // Save to LocalStorage for Sub-Hubs to access
             localStorage.setItem('course_permissions', JSON.stringify(permissions));
             localStorage.setItem('course_classes', JSON.stringify(classes));
 
@@ -151,10 +174,7 @@
             document.getElementById('admin-login-btn').addEventListener('click', adminLogin);
             document.getElementById('admin-login-link').addEventListener('click', showAdminAuth);
             document.getElementById('close-admin-btn').addEventListener('click', closeAdmin);
-
-            document.getElementById('password-input').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') attemptLogin();
-            });
+            document.getElementById('password-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') attemptLogin(); });
         });
 
         function attemptLogin() {
@@ -182,18 +202,14 @@
             COURSE_STRUCTURE.forEach(mod => {
                 const card = document.getElementById(`card-${mod.id}`);
                 const btn = card.querySelector('.btn-course');
-                
-                // Strict check: If config says FALSE, lock it. Default is true.
                 const isUnlocked = permissions[mod.id] !== false;
 
                 if(!isUnlocked) {
-                    // Locked
                     card.classList.add('locked');
                     btn.classList.add('btn-disabled');
                     btn.innerHTML = '<i class="fas fa-lock mr-2"></i> Coming Soon';
                     btn.removeAttribute('href');
                 } else {
-                    // Unlocked
                     card.classList.remove('locked');
                     btn.classList.remove('btn-disabled');
                     btn.setAttribute('href', mod.link);
@@ -202,7 +218,7 @@
             });
         }
 
-        // --- ADMIN LOGIC ---
+        // --- ADMIN & GITHUB LOGIC ---
         function showAdminAuth() {
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('admin-overlay').classList.remove('hidden');
@@ -212,7 +228,6 @@
 
         function adminLogin() {
             const correctPass = (typeof CONFIG_ADMIN_PASS !== 'undefined') ? CONFIG_ADMIN_PASS : "admin123";
-            
             if(document.getElementById('admin-pass-input').value === correctPass) {
                 document.getElementById('admin-auth').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
@@ -222,42 +237,243 @@
 
         function closeAdmin() { location.reload(); }
 
+        // --- RENDER ADMIN UI ---
         function renderAdminView() {
             const container = document.getElementById('access-list');
+            
+            // 1. GitHub Save Panel
             let html = `
-            <div class="mb-6 text-left">
-                <p class="text-yellow-400 text-sm mb-2"><i class="fas fa-info-circle"></i> Settings are loaded from <strong>config.js</strong>. Update that file to change passwords or lock modules.</p>
+            <div class="mb-6 bg-gray-900 p-4 rounded border border-yellow-600">
+                <h4 class="text-yellow-400 font-bold mb-4 flex items-center gap-2"><i class="fas fa-cloud-upload-alt"></i> Save Changes to GitHub</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                    <input type="text" id="gh-username" placeholder="GitHub Username" class="p-2 bg-gray-800 text-white text-xs border border-gray-600 rounded">
+                    <input type="text" id="gh-repo" placeholder="Repository Name" class="p-2 bg-gray-800 text-white text-xs border border-gray-600 rounded">
+                    <input type="password" id="gh-token" placeholder="Personal Access Token" class="p-2 bg-gray-800 text-white text-xs border border-gray-600 rounded">
+                </div>
+                <button onclick="saveConfigToGitHub()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded transition shadow-lg">
+                    <i class="fas fa-save mr-2"></i> Commit All Changes
+                </button>
+                <p class="text-xs text-gray-400 mt-2">* Updates config.js. Site rebuild takes ~60 seconds.</p>
             </div>
             `;
 
-            // 1. Classes View
+            // 2. Class Management Panel
             html += `<div class="mb-6 bg-gray-900 p-4 rounded border border-gray-700">
-                        <h4 class="text-green-400 font-bold mb-4 border-b border-gray-600 pb-2">Active Classes</h4>
-                        <ul class="text-sm text-gray-300 space-y-2">`;
-            classes.forEach(c => {
-                html += `<li><span class="text-white font-bold">${c.id}</span> <span class="text-gray-500">(Pass: ${c.password})</span> - Expires: ${c.expiryDate}</li>`;
-            });
-            html += `</ul></div>`;
+                        <div class="flex justify-between items-center mb-4 border-b border-gray-600 pb-2">
+                            <h4 class="text-green-400 font-bold">Class Management</h4>
+                            <button onclick="showAddClassForm()" class="text-xs bg-blue-600 px-3 py-1 rounded text-white hover:bg-blue-500"><i class="fas fa-plus"></i> Add Class</button>
+                        </div>
+                        
+                        <div id="add-class-form" class="hidden mb-4 bg-gray-800 p-3 rounded">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
+                                <input id="new-class-id" placeholder="Class ID (e.g. EI2026)" class="p-1 text-black text-sm rounded">
+                                <input id="new-class-name" placeholder="Name" class="p-1 text-black text-sm rounded">
+                                <input id="new-class-pass" placeholder="Password" class="p-1 text-black text-sm rounded">
+                                <input id="new-class-date" type="date" class="p-1 text-black text-sm rounded">
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="confirmAddClass()" class="bg-green-500 text-white px-3 py-1 rounded text-sm">Save</button>
+                                <button onclick="hideAddClassForm()" class="bg-gray-600 text-white px-3 py-1 rounded text-sm">Cancel</button>
+                            </div>
+                        </div>
 
-            // 2. Modules View
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-400">
+                                <thead class="text-xs text-gray-200 uppercase bg-gray-800">
+                                    <tr>
+                                        <th class="px-4 py-2">ID</th>
+                                        <th class="px-4 py-2">Name</th>
+                                        <th class="px-4 py-2">Password</th>
+                                        <th class="px-4 py-2">Expiry</th>
+                                        <th class="px-4 py-2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+            
+            classes.forEach((c, idx) => {
+                html += `<tr class="border-b border-gray-700 hover:bg-gray-800">
+                            <td class="px-4 py-2 font-bold text-white">${c.id}</td>
+                            <td class="px-4 py-2">${c.name}</td>
+                            <td class="px-4 py-2 font-mono text-yellow-500">${c.password}</td>
+                            <td class="px-4 py-2">${c.expiryDate}</td>
+                            <td class="px-4 py-2">
+                                <button onclick="deleteClass(${idx})" class="text-red-400 hover:text-red-200"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+            });
+            html += `</tbody></table></div></div>`;
+
+            // 3. Module & Unit Permissions
             html += `<div class="mb-6 bg-gray-900 p-4 rounded border border-gray-700">
-                        <h4 class="text-blue-400 font-bold mb-4 border-b border-gray-600 pb-2">Module Access</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+                        <h4 class="text-blue-400 font-bold mb-4 border-b border-gray-600 pb-2">Module & Unit Access</h4>
+                        <div class="space-y-3">`;
             
             COURSE_STRUCTURE.forEach(mod => {
-                const isUnlocked = permissions[mod.id] !== false;
-                const status = isUnlocked 
-                    ? '<span class="text-green-400 font-bold"><i class="fas fa-check-circle"></i> Unlocked</span>' 
-                    : '<span class="text-red-400 font-bold"><i class="fas fa-lock"></i> Locked</span>';
+                const isModUnlocked = permissions[mod.id] !== false;
                 
-                html += `<div class="flex justify-between items-center bg-gray-800 p-2 rounded">
-                            <span class="text-gray-300">${mod.name}</span>
-                            ${status}
-                         </div>`;
+                html += `<div class="bg-gray-800 rounded overflow-hidden">
+                            <div class="flex justify-between items-center p-3 bg-gray-800 border-b border-gray-700">
+                                <div class="flex items-center gap-3">
+                                    <button onclick="toggleAccordion('${mod.id}')" class="text-gray-400 hover:text-white transition"><i id="icon-${mod.id}" class="fas fa-chevron-right"></i></button>
+                                    <span class="text-white font-bold">${mod.name}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-xs text-gray-500 mr-2 uppercase">Module Lock</span>
+                                    <label class="switch">
+                                        <input type="checkbox" onchange="togglePermission('${mod.id}')" ${isModUnlocked ? 'checked' : ''}>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="units-${mod.id}" class="unit-list">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-3">`;
+                
+                if(mod.units) {
+                    mod.units.forEach(unit => {
+                        const isUnitUnlocked = permissions[unit.id] !== false; // Default true
+                        html += `<div class="flex justify-between items-center bg-gray-700 p-2 rounded">
+                                    <span class="text-gray-300 text-xs">${unit.name}</span>
+                                    <label class="switch scale-75">
+                                        <input type="checkbox" onchange="togglePermission('${unit.id}')" ${isUnitUnlocked ? 'checked' : ''}>
+                                        <span class="slider"></span>
+                                    </label>
+                                 </div>`;
+                    });
+                }
+                
+                html += `</div></div></div>`;
             });
             html += `</div></div>`;
 
             container.innerHTML = html;
+            
+            // Restore Credentials
+            if(localStorage.getItem('gh_user')) document.getElementById('gh-username').value = localStorage.getItem('gh_user');
+            if(localStorage.getItem('gh_repo')) document.getElementById('gh-repo').value = localStorage.getItem('gh_repo');
+            if(localStorage.getItem('gh_token')) document.getElementById('gh-token').value = localStorage.getItem('gh_token');
+        }
+
+        // --- DYNAMIC UI FUNCTIONS ---
+
+        function toggleAccordion(modId) {
+            const el = document.getElementById(`units-${modId}`);
+            const icon = document.getElementById(`icon-${modId}`);
+            if (el.classList.contains('expanded')) {
+                el.classList.remove('expanded');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                el.classList.add('expanded');
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        function showAddClassForm() {
+            document.getElementById('add-class-form').classList.remove('hidden');
+        }
+        
+        function hideAddClassForm() {
+            document.getElementById('add-class-form').classList.add('hidden');
+            // Clear inputs
+            document.getElementById('new-class-id').value = '';
+            document.getElementById('new-class-name').value = '';
+            document.getElementById('new-class-pass').value = '';
+            document.getElementById('new-class-date').value = '';
+        }
+
+        function confirmAddClass() {
+            const id = document.getElementById('new-class-id').value.trim();
+            const name = document.getElementById('new-class-name').value.trim();
+            const pass = document.getElementById('new-class-pass').value.trim();
+            const date = document.getElementById('new-class-date').value;
+
+            if(!id || !name || !pass || !date) { alert("All fields are required."); return; }
+            if(classes.some(c => c.id === id)) { alert("Class ID already exists!"); return; }
+
+            classes.push({ id: id, name: name, password: pass, expiryDate: date });
+            hideAddClassForm();
+            renderAdminView(); // Re-render table
+        }
+
+        function deleteClass(index) {
+            if(confirm("Are you sure you want to remove this class?")) {
+                classes.splice(index, 1);
+                renderAdminView();
+            }
+        }
+
+        function togglePermission(id) {
+            if (permissions[id] === undefined) permissions[id] = true;
+            permissions[id] = !permissions[id];
+            // No alert needed, switch gives visual feedback
+        }
+
+        // --- GITHUB API SAVE ---
+        async function saveConfigToGitHub() {
+            const user = document.getElementById('gh-username').value.trim();
+            const repo = document.getElementById('gh-repo').value.trim();
+            const token = document.getElementById('gh-token').value.trim();
+
+            if(!user || !repo || !token) { alert("Please enter GitHub credentials."); return; }
+
+            localStorage.setItem('gh_user', user);
+            localStorage.setItem('gh_repo', repo);
+            localStorage.setItem('gh_token', token);
+
+            const filePath = 'EI_Training_Phase2/config.js'; 
+            const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/${filePath}`;
+
+            // Reconstruct config.js content
+            const newFileContent = `// =================================================================
+//  COURSE CONFIGURATION FILE (config.js)
+//  Auto-Updated via Admin Panel
+// =================================================================
+
+// --- 1. ADMIN PASSWORD ---
+const CONFIG_ADMIN_PASS = "${typeof CONFIG_ADMIN_PASS !== 'undefined' ? CONFIG_ADMIN_PASS : 'admin123'}";
+
+// --- 2. CLASS LIST (Student Logins) ---
+const CONFIG_CLASSES = ${JSON.stringify(classes, null, 4)};
+
+// --- 3. MODULE & UNIT PERMISSIONS ---
+// Merged permissions list
+const CONFIG_PERMISSIONS = ${JSON.stringify(permissions, null, 4)};
+`;
+
+            const btn = document.querySelector('button[onclick="saveConfigToGitHub()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            try {
+                // 1. Get SHA
+                const getResponse = await fetch(apiUrl, { headers: { 'Authorization': `token ${token}` } });
+                if (!getResponse.ok) throw new Error("File not found. Check Repo Name/Path.");
+                const getData = await getResponse.json();
+
+                // 2. Push Update
+                const putResponse = await fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: "Admin Panel Update: Classes/Permissions",
+                        content: btoa(newFileContent),
+                        sha: getData.sha
+                    })
+                });
+
+                if (putResponse.ok) {
+                    alert("Settings Saved! GitHub is rebuilding the site. Wait ~60s.");
+                } else {
+                    throw new Error((await putResponse.json()).message);
+                }
+            } catch (error) {
+                alert("Error: " + error.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
     </script>
 </head>
@@ -267,10 +483,9 @@
         <div id="login-modal">
             <i class="fas fa-user-lock text-5xl text-yellow-400 mb-4"></i>
             <h2 class="text-2xl font-bold mb-2 text-white">Student Login</h2>
-            <p class="text-gray-400 text-sm mb-6">Please enter your Class ID and Password.</p>
+            <p class="text-gray-400 text-sm mb-6">Enter Class ID (e.g., EI2025) and Password.</p>
             <input type="text" id="class-id-input" class="login-input" placeholder="Class ID">
             <input type="password" id="password-input" class="login-input" placeholder="Password">
-            <p id="error-msg" class="text-red-500 text-sm mb-4 hidden"><i class="fas fa-exclamation-circle"></i> Incorrect Credentials</p>
             <button id="login-btn" class="btn-course w-full">Access Course</button>
         </div>
         <div class="mt-8"><span id="admin-login-link" class="admin-btn">Admin Login</span></div>
@@ -284,23 +499,18 @@
             <button onclick="location.reload()" class="mt-4 text-gray-400 text-sm underline">Cancel</button>
         </div>
 
-        <div id="admin-panel" class="hidden bg-gray-800 p-8 rounded border border-yellow-500 w-full max-w-4xl text-left h-3/4 overflow-y-auto relative">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-yellow-400">Configuration View</h2>
-                <button id="close-admin-btn" class="text-gray-400 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
+        <div id="admin-panel" class="hidden bg-gray-900 w-full h-full p-4 overflow-y-auto">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-center mb-8 sticky top-0 bg-gray-900 py-4 z-10 border-b border-gray-800">
+                    <h2 class="text-3xl font-bold text-yellow-400"><i class="fas fa-cogs"></i> Configuration Dashboard</h2>
+                    <button id="close-admin-btn" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded"><i class="fas fa-times mr-2"></i> Exit Admin</button>
+                </div>
+                <div id="access-list"></div>
             </div>
-            <div id="access-list"></div>
         </div>
     </div>
 
-    <div id="expiry-overlay" class="overlay hidden">
-        <i class="fas fa-calendar-times text-6xl text-red-500 mb-6"></i>
-        <h1 class="text-5xl font-bold mb-4 text-white">Access Expired</h1>
-        <p class="text-xl text-gray-400">Your access to this course material has ended.</p>
-    </div>
-
     <div id="main-content" class="hidden flex flex-col min-h-screen w-full mt-4">
-        
         <header class="py-12 px-4 text-center bg-gray-900/50 relative">
             <button onclick="logout()" class="absolute top-4 right-4 text-red-400 text-sm hover:underline"><i class="fas fa-sign-out-alt"></i> Logout</button>
             <h1 class="text-5xl md:text-6xl font-bold mb-4 text-white">Phase 2 Electrical Instrumentation</h1>
@@ -309,55 +519,50 @@
 
         <main class="flex-grow container mx-auto px-4 py-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                
                 <div class="course-card" id="card-module1">
-                    <div><span class="module-num">MODULE 1</span><div class="mb-4"><i class="fas fa-bolt text-5xl text-blue-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Electricity / Electronics Hub</h2><p class="text-gray-400 text-sm">Ohm's Law, Circuits, Magnetism.</p></div>
+                    <div><span class="module-num">MODULE 1</span><div class="mb-4"><i class="fas fa-bolt text-5xl text-blue-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Electricity / Electronics</h2><p class="text-gray-400 text-sm">Ohm's Law, Circuits, Magnetism.</p></div>
                     <a href="#" class="btn-course">Loading...</a>
                 </div>
                 
                 <div class="course-card" id="card-module2">
-                    <div><span class="module-num">MODULE 2</span><div class="mb-4"><i class="fas fa-tools text-5xl text-yellow-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Installation Techniques Hub</h2><p class="text-gray-400 text-sm">Cabling, Containment, Testing.</p></div>
+                    <div><span class="module-num">MODULE 2</span><div class="mb-4"><i class="fas fa-tools text-5xl text-yellow-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Installation Techniques</h2><p class="text-gray-400 text-sm">Cabling, Containment, Testing.</p></div>
                     <a href="#" class="btn-course">Loading...</a>
                 </div>
 
                 <div class="course-card" id="card-module3">
-                    <div><span class="module-num">MODULE 3</span><div class="mb-4"><i class="fas fa-tachometer-alt text-5xl text-green-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Pressure Hub</h2><p class="text-gray-400 text-sm">Manometers, Transmitters.</p></div>
+                    <div><span class="module-num">MODULE 3</span><div class="mb-4"><i class="fas fa-tachometer-alt text-5xl text-green-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Pressure Measurement</h2><p class="text-gray-400 text-sm">Manometers, Transmitters.</p></div>
                     <a href="#" class="btn-course">Loading...</a>
                 </div>
 
                 <div class="course-card" id="card-module4">
-                    <div><span class="module-num">MODULE 4</span><div class="mb-4"><i class="fas fa-water text-5xl text-cyan-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Flow Hub</h2><p class="text-gray-400 text-sm">Orifice, Venturi, Magnetic.</p></div>
+                    <div><span class="module-num">MODULE 4</span><div class="mb-4"><i class="fas fa-water text-5xl text-cyan-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Flow Measurement</h2><p class="text-gray-400 text-sm">Orifice, Venturi, Magnetic.</p></div>
                     <a href="#" class="btn-course">Loading...</a>
                 </div>
 
                 <div class="course-card" id="card-module5">
-                    <div><span class="module-num">MODULE 5</span><div class="mb-4"><i class="fas fa-layer-group text-5xl text-purple-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Level Hub</h2><p class="text-gray-400 text-sm">Hydrostatic, Radar, Ultrasonic.</p></div>
+                    <div><span class="module-num">MODULE 5</span><div class="mb-4"><i class="fas fa-layer-group text-5xl text-purple-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Level Measurement</h2><p class="text-gray-400 text-sm">Hydrostatic, Radar, Ultrasonic.</p></div>
                     <a href="#" class="btn-course">Loading...</a>
                 </div>
 
                 <div class="course-card" id="card-module6">
-                    <div><span class="module-num">MODULE 6</span><div class="mb-4"><i class="fas fa-thermometer-half text-5xl text-red-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Temperature Hub</h2><p class="text-gray-400 text-sm">RTDs, Thermocouples.</p></div>
+                    <div><span class="module-num">MODULE 6</span><div class="mb-4"><i class="fas fa-thermometer-half text-5xl text-red-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Temperature Measurement</h2><p class="text-gray-400 text-sm">RTDs, Thermocouples.</p></div>
                     <a href="#" class="btn-course">Loading...</a>
                 </div>
 
                 <div class="course-card" id="card-module7">
-                    <div><span class="module-num">MODULE 7</span><div class="mb-4"><i class="fas fa-robot text-5xl text-orange-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Automatic Control Hub</h2><p class="text-gray-400 text-sm">PID Loops, Valves, PLCs.</p></div>
+                    <div><span class="module-num">MODULE 7</span><div class="mb-4"><i class="fas fa-robot text-5xl text-orange-400"></i></div><h2 class="text-2xl font-bold text-white mb-2">Automatic Control</h2><p class="text-gray-400 text-sm">PID Loops, Valves, PLCs.</p></div>
                     <a href="#" class="btn-course">Loading...</a>
                 </div>
 
                 <div class="course-card" id="card-module8">
-                    <div><span class="module-num" style="background:white; color:black">REVISION</span><div class="mb-4"><i class="fas fa-clipboard-check text-5xl text-white"></i></div><h2 class="text-2xl font-bold text-white mb-2">Knowledge Check Hub</h2><p class="text-gray-400 text-sm">Assessments T1, T2, T3.</p></div>
+                    <div><span class="module-num" style="background:white; color:black">REVISION</span><div class="mb-4"><i class="fas fa-clipboard-check text-5xl text-white"></i></div><h2 class="text-2xl font-bold text-white mb-2">Knowledge Check</h2><p class="text-gray-400 text-sm">Assessments T1, T2, T3.</p></div>
                     <a href="#" class="btn-course">Loading...</a>
                 </div>
-
             </div>
         </main>
         
         <footer class="py-6 text-center text-gray-600 text-xs border-t border-gray-800 mt-8">
             <p>&copy; MSLETB 2025 Phase 2 Electrical Instrumentation Training</p>
-            <div class="mt-2">
-                <button id="admin-login-link" class="text-gray-600 hover:text-yellow-500 underline transition">Admin Login</button>
-            </div>
         </footer>
     </div>
 </body>
