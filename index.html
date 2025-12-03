@@ -421,7 +421,7 @@
             localStorage.setItem('gh_repo', repo);
             localStorage.setItem('gh_token', token);
 
-            const filePath = 'EI_Training_Phase2/config.js'; 
+            const filePath = 'config.js'; 
             const apiUrl = `https://api.github.com/repos/${user}/${repo}/contents/${filePath}`;
 
             // Reconstruct config.js content
@@ -567,3 +567,4 @@ const CONFIG_PERMISSIONS = ${JSON.stringify(permissions, null, 4)};
     </div>
 </body>
 </html>
+
