@@ -19,6 +19,12 @@ const CONFIG_CLASSES = [
         "name": "Class 2026",
         "password": "class2026",
         "expiryDate": "2026-06-30"
+    },
+    {
+        "id": "101",
+        "name": "101",
+        "password": "101",
+        "expiryDate": "2026-01-01"
     }
 ];
 
