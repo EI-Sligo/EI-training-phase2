@@ -88,7 +88,7 @@ const CONFIG_PERMISSIONS = {
     "m7_u4": true,
     "m7_u5": true,
     "m7_u6": true,
-    "kc_t1": false,
+    "kc_t1": true,
     "kc_t2": true,
     "kc_t3": false
 };
